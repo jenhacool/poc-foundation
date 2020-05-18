@@ -98,6 +98,8 @@ class POC_Foundation {
         add_action( 'woocommerce_process_product_meta', array( $this, 'save_custom_product_data_field' ) );
 
         add_filter( 'woocommerce_get_shop_coupon_data', array( $this, 'create_virtual_coupon' ), 10, 2  );
+
+        add_action( 'woocommerce_before_cart', array( $this, 'apply_coupon_by_ref_by' ) );
     }
 
     /**
@@ -341,6 +343,37 @@ class POC_Foundation {
         );
 
         return $coupon_settings;
+    }
+
+    /**
+     * Auto apply coupon if COOKIE has ref_by value
+     */
+    public function apply_coupon_by_ref_by()
+    {
+        $ref_by = ! empty( $_COOKIE['ref_by'] ) ? $_COOKIE['ref_by'] : get_user_meta( get_current_user_id(), 'ref_by', true );
+
+        if( empty( $ref_by ) ) {
+            return;
+        }
+
+        $cart = WC()->cart;
+
+        $applied_coupons = $cart->get_applied_coupons();
+
+        // Check if cart has coupon or not
+        if( in_array( $ref_by, $applied_coupons ) ) {
+            return;
+        }
+
+        // Check if coupon is valid or not
+        if( ! $this->is_coupon_valid( $ref_by ) ) {
+            return;
+        }
+
+        // If valid, apply it
+        $cart->add_discount( $ref_by );
+
+        wc_print_notices();
     }
 
     /**
