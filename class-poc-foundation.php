@@ -125,9 +125,13 @@ class POC_Foundation {
      * @param $data_store
      */
     public function add_ref_to_order( $object, $data_store ) {
-        $ref_by = ! empty( $_COOKIE['ref_by'] ) ? $_COOKIE['ref_by'] : get_user_meta( get_current_user_id(), 'ref_by', true );
-
         $order_id = $object->get_id();
+
+        if( ! empty( get_post_meta( $order_id, 'ref_by' ) ) ) {
+            return;
+        }
+
+        $ref_by = ! empty( $_COOKIE['ref_by'] ) ? $_COOKIE['ref_by'] : get_user_meta( get_current_user_id(), 'ref_by', true );
 
         if( empty( $ref_by ) ) {
             $order = wc_get_order( $order_id );
@@ -149,7 +153,11 @@ class POC_Foundation {
             $ref_by = $coupon_code;
         }
 
-        update_post_meta( $order_id, 'ref_by', $ref_by, true );
+        add_post_meta( $order_id, 'ref_by', $ref_by );
+
+        if( ! empty( get_post_meta( $order_id, 'ref_by_subid' ) ) ) {
+            return;
+        }
 
         $ref_by_subid = ! empty( $_COOKIE['ref_by_subid'] ) ? $_COOKIE['ref_by_subid'] : get_user_meta( get_current_user_id(), 'ref_by_subid', true );
 
@@ -157,7 +165,7 @@ class POC_Foundation {
             return;
         }
 
-        update_post_meta( $order_id, 'ref_by_subid', $ref_by_subid, true);
+        add_post_meta( $order_id, 'ref_by_subid', $ref_by_subid );
     }
 
     /**
