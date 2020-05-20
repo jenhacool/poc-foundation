@@ -99,6 +99,8 @@ class POC_Foundation {
 
         add_filter( 'woocommerce_get_shop_coupon_data', array( $this, 'create_virtual_coupon' ), 10, 2  );
 
+        add_filter( 'woocommerce_coupon_get_discount_amount', array( $this, 'get_discount_amount' ), 10, 6 );
+
         add_action( 'woocommerce_before_cart', array( $this, 'apply_coupon_by_ref_by' ) );
     }
 
@@ -301,8 +303,8 @@ class POC_Foundation {
     public function add_custom_product_data_field()
     {
         $args = array(
-            'id' => 'poc_foundation_revenue_share',
-            'label' => __( 'Revenue Share' ),
+            'id' => 'poc_foundation_discount',
+            'label' => __( 'POC Discount' ),
         );
 
         woocommerce_wp_text_input( $args );
@@ -315,11 +317,17 @@ class POC_Foundation {
      */
     public function save_custom_product_data_field( $post_id )
     {
+        if( ! isset( $_POST['poc_foundation_discount'] ) ) {
+            return;
+        }
+
         $product = wc_get_product( $post_id );
 
-        $title = isset( $_POST['poc_foundation_revenue_share'] ) ? $_POST['poc_foundation_revenue_share'] : '';
+        if( ! $product ) {
+            return;
+        }
 
-        $product->update_meta_data( 'poc_foundation_revenue_share', sanitize_text_field( $title ) );
+        $product->update_meta_data( 'poc_foundation_discount', sanitize_text_field( $_POST['poc_foundation_discount'] ) );
 
         $product->save();
     }
@@ -351,6 +359,38 @@ class POC_Foundation {
         );
 
         return $coupon_settings;
+    }
+
+    /**
+     * Custom discount amount base on product
+     *
+     * @param $round
+     * @param $discounting_amount
+     * @param $cart_item
+     * @param $single
+     * @param $coupon
+     *
+     * @return false|float
+     */
+    public function get_discount_amount( $round, $discounting_amount, $cart_item, $single, $coupon )
+    {
+        $product = wc_get_product( $cart_item['product_id'] );
+
+        if( ! $product ) {
+            return $round;
+        }
+
+        $custom_discount = $product->get_meta( 'poc_foundation_discount' );
+
+        if( empty( $custom_discount ) ) {
+            return $round;
+        }
+
+        $discount = (float) $coupon->get_amount() * ( $custom_discount / 100 );
+
+        $round = round( min( $discount, $discounting_amount ), wc_get_rounding_precision() );
+
+        return $round;
     }
 
     /**
