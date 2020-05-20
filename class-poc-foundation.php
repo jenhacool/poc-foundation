@@ -393,9 +393,9 @@ class POC_Foundation {
             return $round;
         }
 
-        $discount = (float) $coupon->get_amount() * ( $custom_discount / 100 );
+        $discount = (float) $cart_item['line_subtotal'] * ( (int) $custom_discount / 100 );
 
-        $round = round( min( $discount, $discounting_amount ), wc_get_rounding_precision() );
+        $round = round( $discount, wc_get_rounding_precision() );
 
         return $round;
     }
