@@ -302,12 +302,15 @@ class POC_Foundation {
      */
     public function add_custom_product_data_field()
     {
-        $args = array(
+        woocommerce_wp_text_input( array(
             'id' => 'poc_foundation_discount',
             'label' => __( 'POC Discount' ),
-        );
+        ) );
 
-        woocommerce_wp_text_input( $args );
+        woocommerce_wp_text_input( array(
+            'id' => 'poc_foundation_revenue_share',
+            'label' => __( 'POC Revenue share' ),
+        ) );
     }
 
     /**
@@ -317,7 +320,7 @@ class POC_Foundation {
      */
     public function save_custom_product_data_field( $post_id )
     {
-        if( ! isset( $_POST['poc_foundation_discount'] ) ) {
+        if( ! isset( $_POST['poc_foundation_discount'] ) && ! isset( $_POST['poc_foundation_revenue_share'] ) ) {
             return;
         }
 
@@ -327,7 +330,11 @@ class POC_Foundation {
             return;
         }
 
-        $product->update_meta_data( 'poc_foundation_discount', sanitize_text_field( $_POST['poc_foundation_discount'] ) );
+        $discount = ( $_POST['poc_foundation_discount'] ) ? sanitize_text_field( $_POST['poc_foundation_discount'] ) : '';
+        $revenue_share = ( $_POST['poc_foundation_revenue_share'] ) ? sanitize_text_field( $_POST['poc_foundation_revenue_share'] ) : '';
+
+        $product->update_meta_data( 'poc_foundation_discount', $discount );
+        $product->update_meta_data( 'poc_foundation_revenue_share', $revenue_share );
 
         $product->save();
     }
