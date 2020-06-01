@@ -102,6 +102,10 @@ class POC_Foundation {
         add_filter( 'woocommerce_coupon_get_discount_amount', array( $this, 'get_discount_amount' ), 10, 6 );
 
         add_action( 'woocommerce_before_cart', array( $this, 'apply_coupon_by_ref_by' ) );
+
+        add_action( 'admin_menu', array( $this, 'register_options_page' ) );
+
+        add_action( 'admin_init', array( $this, 'register_plugin_settings' ) );
     }
 
     /**
@@ -425,6 +429,67 @@ class POC_Foundation {
         $cart->add_discount( $ref_by );
 
         wc_print_notices();
+    }
+
+    /**
+     * Plugin options page
+     */
+    public function register_options_page()
+    {
+        add_menu_page(
+            'POC Foundation',
+            'POC Foundation',
+            'manage_options',
+            'poc-foundation',
+            array( $this, 'options_page_html' )
+        );
+    }
+
+    /**
+     * Plugin options page HTML
+     */
+    public function options_page_html()
+    {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            return;
+        }
+
+        if ( isset( $_GET['settings-updated'] ) ) {
+            add_settings_error( 'poc_foundation_messages', 'poc_foundation_message', __( 'Settings Saved', 'poc_foundation' ), 'updated' );
+        }
+
+        settings_errors( 'poc_foundation_messages' );
+
+        ?>
+        <div class="wrap">
+            <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+            <form action="options.php" method="post">
+                <?php settings_fields( 'poc_foundation_option_group' ); ?>
+                <?php do_settings_sections( 'poc_foundation_option_group' ); ?>
+                <table class="form-table">
+                    <tr valign="top">
+                        <th scope="row">API Key</th>
+                        <td><input type="text" name="poc_foundation_api_key" value="<?php echo esc_attr( get_option( 'poc_foundation_api_key' ) ); ?>" /></td>
+                    </tr>
+
+                    <tr valign="top">
+                        <th scope="row">UID Prefix</th>
+                        <td><input type="text" name="poc_foundation_uid_prefix" value="<?php echo esc_attr( get_option( 'poc_foundation_uid_prefix' ) ); ?>" /></td>
+                    </tr>
+                </table>
+                <?php submit_button( 'Save Settings' ); ?>
+            </form>
+        </div>
+        <?php
+    }
+
+    /**
+     * Plugin settings init
+     */
+    public function register_plugin_settings()
+    {
+        register_setting( 'poc_foundation_option_group', 'poc_foundation_api_key' );
+        register_setting( 'poc_foundation_option_group', 'poc_foundation_uid_prefix' );
     }
 
     /**
