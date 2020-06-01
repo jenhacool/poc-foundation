@@ -81,7 +81,7 @@ class POC_Foundation {
     {
         add_action( 'wp_login', array( $this, 'add_ref_to_user' ) , 10, 2);
 
-        add_action( 'woocommerce_after_order_object_save', array( $this, 'add_ref_to_order' ), 10, 2 );
+        add_action( 'woocommerce_checkout_order_processed', array( $this, 'add_ref_to_order' ), 10, 3 );
 
         add_action( 'woocommerce_order_status_completed', array( $this, 'after_order_completed' ) );
 
@@ -126,9 +126,7 @@ class POC_Foundation {
      * @param $object
      * @param $data_store
      */
-    public function add_ref_to_order( $object, $data_store ) {
-        $order_id = $object->get_id();
-
+    public function add_ref_to_order( $order_id, $posted_data, $order ) {
         if( ! empty( get_post_meta( $order_id, 'ref_by' ) ) ) {
             return;
         }
@@ -136,8 +134,6 @@ class POC_Foundation {
         $ref_by = ! empty( $_COOKIE['ref_by'] ) ? $_COOKIE['ref_by'] : get_user_meta( get_current_user_id(), 'ref_by', true );
 
         if( empty( $ref_by ) ) {
-            $order = wc_get_order( $order_id );
-
             $coupon_codes = $order->get_coupon_codes();
 
             if( empty( $coupon_codes ) ) {
