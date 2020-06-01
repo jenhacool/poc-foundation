@@ -11,20 +11,6 @@ class POC_Foundation {
     private static $api_endpoint = "http://51.158.174.189:3002";
 
     /**
-     * API Key
-     *
-     * @var string
-     */
-    private static $api_key = "co15rysYZGGQEPk6qbSOywzgZJbeuXzX";
-
-    /**
-     * UID Prefix
-     *
-     * @var string
-     */
-    private static $uid_prefix = "loc.com.vn";
-
-    /**
      * Refund term
      *
      * @var int
@@ -188,15 +174,15 @@ class POC_Foundation {
 
         $order = wc_get_order( $order_id );
 
-        $username = self::$uid_prefix;
+        $username = $this->get_uid_prefix();
 
         $amount = round( $this->get_revenue_share_total( $order ) * self::$currency_exchange / $poc_price, 6 );
         $release = time() + self::$refund_term * 60;
 
-        $this->write_log("Added an affiliate TX:: username: ".$username." / ref_by: ".$ref_by." / uid: ".self::$uid_prefix."-".$order_id." / amount: ".$amount." / release: ".$release);
+        $this->write_log("Added an affiliate TX:: username: ".$username." / ref_by: ".$ref_by." / uid: ".$this->get_uid_prefix()."-".$order_id." / amount: ".$amount." / release: ".$release);
 
-        $result = $this->send_request( self::$api_endpoint."/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".self::$uid_prefix."-".$order_id."/amount/".$amount."/merchant/".self::$uid_prefix."/release/".$release."/" );
-        if ($result != "Done")  $this->write_log("Error while adding an affiliate TX:: username: ".$username." / uid: ".self::$uid_prefix.$order_id." / amount: ".$amount." / release: ".$release);
+        $result = $this->send_request( self::$api_endpoint."/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
+        if ($result != "Done")  $this->write_log("Error while adding an affiliate TX:: username: ".$username." / uid: ".$this->get_uid_prefix().$order_id." / amount: ".$amount." / release: ".$release);
     }
 
     /**
@@ -206,12 +192,12 @@ class POC_Foundation {
      */
     public function after_order_refunded( $order_id )
     {
-        $this->write_log("Revoked an affiliate TX:: ".self::$uid_prefix.$order_id);
+        $this->write_log("Revoked an affiliate TX:: ".$this->get_uid_prefix().$order_id);
 
-        $result = $this->send_request(self::$api_endpoint."/revoketransaction/uid/".self::$uid_prefix.$order_id."/");
+        $result = $this->send_request(self::$api_endpoint."/revoketransaction/uid/".$this->get_uid_prefix().$order_id."/");
 
         if ($result != "Done") {
-            $this->write_log("Error while revoke a Tx:: uid: ".self::$uid_prefix.$order_id);
+            $this->write_log("Error while revoke a Tx:: uid: ".$this->get_uid_prefix().$order_id);
         }
     }
 
@@ -266,7 +252,7 @@ class POC_Foundation {
             "ConversionID": "1022110835",
             "ConversionLabel": "VcZ0CPGB2M0BEPPYsOcD",
             "ConversionValue": "'.$order->get_total() * self::$currency_exchange.'",
-            "ConversionOrderID": "'.self::$uid_prefix."-".$order_id.'",
+            "ConversionOrderID": "'.$this->get_uid_prefix()."-".$order_id.'",
             "ConversionCurrency": "USD",
             "eventCallback": function() {
               // alert("tessssss")
@@ -290,7 +276,7 @@ class POC_Foundation {
 
         if ( ! empty( $_GET["poc_crmuid_notify_url"] ) ) {
             echo $this->send_get(
-                "https://crmuid.xyz/site/".self::$uid_prefix."/url/".urlencode(base64_encode($_GET["poc_crmuid_notify_url"])),
+                "https://crmuid.xyz/site/".$this->get_uid_prefix()."/url/".urlencode(base64_encode($_GET["poc_crmuid_notify_url"])),
                 ["crmuid: $_GET[crmuid]"]
             );
             die();
@@ -532,7 +518,7 @@ class POC_Foundation {
      */
     protected function send_request( $url ) {
         $headers = [
-            'api-key: ' . self::$api_key,
+            'api-key: ' . $this->get_api_key(),
         ];
 
         return $this->send_get( $url, $headers );
@@ -627,5 +613,25 @@ class POC_Foundation {
         }
 
         return true;
+    }
+
+    /**
+     * Get API Key
+     *
+     * @return mixed|void
+     */
+    protected function get_api_key()
+    {
+        return get_option( 'poc_foundation_api_key' );
+    }
+
+    /**
+     * Get UID Prefix
+     *
+     * @return mixed|void
+     */
+    protected function get_uid_prefix()
+    {
+        return get_option( 'poc_foundation_uid_prefix' );
     }
 }
