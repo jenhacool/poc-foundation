@@ -130,8 +130,8 @@ class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_
 			return;
 		}
 
-		$_COOKIE['poc_foundation_fanpage_url'] = $fanpage_data['data']['fanpage_url'];
-		$_COOKIE['poc_foundation_fanpage_id'] = $fanpage_data['data']['fanpage_id'];
+		setcookie('poc_foundation_fanpage_url', $fanpage_data['data']['fanpage_url'], time() + (86400 * 30), "/");
+		setcookie('poc_foundation_fanpage_id', $fanpage_data['data']['fanpage_id'], time() + (86400 * 30), "/");
 		$ajax_handler->add_response_data( 'redirect_url', $permalink );
 		return;
 	}
