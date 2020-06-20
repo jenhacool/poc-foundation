@@ -8,7 +8,7 @@ class POC_Foundation {
      *
      * @var string
      */
-    private static $api_endpoint = "http://51.158.174.189:3002";
+    private static $api_endpoint = "https://api.poc.me/api";
 
     /**
      * Refund term
@@ -92,6 +92,20 @@ class POC_Foundation {
         add_action( 'admin_menu', array( $this, 'register_options_page' ) );
 
         add_action( 'admin_init', array( $this, 'register_plugin_settings' ) );
+
+	    add_action( 'elementor_pro/init', array( $this, 'add_elementor_form_action' ) );
+
+	    add_action( 'elementor/dynamic_tags/register_tags', function( $dynamic_tags ) {
+		    \Elementor\Plugin::$instance->dynamic_tags->register_group( 'poc-foundation-dynamic-tags', [
+			    'title' => 'POC Foundation'
+		    ] );
+
+		    include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/facebook-url-tag.php' );
+		    include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/facebook-id-tag.php' );
+
+		    $dynamic_tags->register_tag( 'Facebook_URL_Tag' );
+		    $dynamic_tags->register_tag( 'Facebook_ID_Tag' );
+	    } );
     }
 
     /**
@@ -181,7 +195,7 @@ class POC_Foundation {
 
         $this->write_log("Added an affiliate TX:: username: ".$username." / ref_by: ".$ref_by." / uid: ".$this->get_uid_prefix()."-".$order_id." / amount: ".$amount." / release: ".$release);
 
-        $result = $this->send_request( self::$api_endpoint."/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
+        $result = $this->send_request( "http://51.158.174.189:3002/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
         if ($result != "Done")  $this->write_log("Error while adding an affiliate TX:: username: ".$username." / uid: ".$this->get_uid_prefix().$order_id." / amount: ".$amount." / release: ".$release);
     }
 
@@ -462,6 +476,27 @@ class POC_Foundation {
                         <th scope="row">UID Prefix</th>
                         <td><input type="text" name="poc_foundation_uid_prefix" value="<?php echo esc_attr( get_option( 'poc_foundation_uid_prefix' ) ); ?>" /></td>
                     </tr>
+
+                    <tr valign="top">
+                        <th scope="row">Redirect Page</th>
+                        <td>
+                            <select name="poc_foundation_redirect_page" id="">
+                                <?php foreach ( get_pages() as $page ) : ?>
+                                    <option value="<?php echo $page->ID; ?>" <?php echo ( get_option( 'poc_foundation_redirect_page' ) == $page->ID ) ? 'selected' : ''; ?>><?php echo $page->post_title; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                    </tr>
+
+                    <tr valign="top">
+                        <th scope="row">Fanpage URL</th>
+                        <td><input type="text" name="poc_foundation_fanpage_url" value="<?php echo esc_attr( get_option( 'poc_foundation_fanpage_url' ) ); ?>" /></td>
+                    </tr>
+
+                    <tr valign="top">
+                        <th scope="row">Fanpage ID</th>
+                        <td><input type="text" name="poc_foundation_fanpage_id" value="<?php echo esc_attr( get_option( 'poc_foundation_fanpage_id' ) ); ?>" /></td>
+                    </tr>
                 </table>
                 <?php submit_button( 'Save Settings' ); ?>
             </form>
@@ -476,6 +511,25 @@ class POC_Foundation {
     {
         register_setting( 'poc_foundation_option_group', 'poc_foundation_api_key' );
         register_setting( 'poc_foundation_option_group', 'poc_foundation_uid_prefix' );
+        register_setting( 'poc_foundation_option_group', 'poc_foundation_redirect_page' );
+        register_setting( 'poc_foundation_option_group', 'poc_foundation_fanpage_id' );
+	    register_setting( 'poc_foundation_option_group', 'poc_foundation_fanpage_url' );
+    }
+
+	/**
+	 * Add custom Elementor action
+	 */
+    public function add_elementor_form_action()
+    {
+        include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/modules/forms/actions/poc.php' );
+
+        $poc_affiliate_notifier = new POC_Affiliate_Notifier( array(
+	        'api_endpoint' => self::$api_endpoint,
+	        'api_key' => $this->get_api_key(),
+	        'domain' => $this->get_uid_prefix()
+        ) );
+
+        \ElementorPro\Plugin::instance()->modules_manager->get_modules( 'forms' )->add_form_action( $poc_affiliate_notifier->get_name(), $poc_affiliate_notifier );
     }
 
     /**
@@ -592,13 +646,16 @@ class POC_Foundation {
 
     /**
      * Check if coupon is valid or not
+     *
      * @param $coupon_code
+     *
+     * @return boolean
      */
     protected function is_coupon_valid( $coupon_code )
     {
         $coupon_code = strtolower( $coupon_code );
 
-        $response = wp_remote_get( "https://api.hostletter.com/api/poc_user/$coupon_code" );
+        $response = wp_remote_get( self::$api_endpoint . '/user/' . $coupon_code );
 
         if( is_wp_error( $response ) ) {
             return false;
