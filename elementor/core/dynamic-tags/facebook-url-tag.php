@@ -29,6 +29,6 @@ class Facebook_URL_Tag extends \Elementor\Core\DynamicTags\Tag
 
 	public function render()
 	{
-		echo ( $_COOKIE['poc_foundation_fanpage_url'] ) ? $_COOKIE['poc_foundation_fanpage_url'] : get_option( 'poc_foundation_fanpage_url' );
+		echo ( isset( $_COOKIE['poc_foundation_fanpage_url'] ) ) ? $_COOKIE['poc_foundation_fanpage_url'] : get_option( 'poc_foundation_fanpage_url' );
 	}
 }

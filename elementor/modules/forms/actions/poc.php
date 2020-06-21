@@ -82,7 +82,7 @@ class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_
 		$send_notify = wp_remote_post( $this->config['api_endpoint'] . '/notify/new_ref_lead', array(
 			'headers' => array(
 				'Content-Type' => 'application/json; charset=utf-8',
-				'api_key' => $this->config['api_key']
+				'api-key' => $this->config['api_key']
 			),
 			'body' => json_encode( $fields ),
 			'data_format' => 'body',
@@ -110,13 +110,13 @@ class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_
 		$response = wp_remote_get( $this->config['api_endpoint'] . '/website/get_fanpage/' . $_COOKIE['ref_by'], array(
 			'headers' => array(
 				'Content-Type' => 'application/json; charset=utf-8',
-				'api_key' => get_option( 'poc_foundation_api_key' )
+				'api-key' => get_option( 'poc_foundation_api_key' )
 			),
 		) );
 
 		if( is_wp_error( $response ) ) {
-			$_COOKIE['poc_foundation_fanpage_url'] = get_option( 'poc_foundation_fanpage_url' );
-			$_COOKIE['poc_foundation_fanpage_id'] = get_option( 'poc_foundation_fanpage_id' );
+			setcookie('poc_foundation_fanpage_url', get_option( 'poc_foundation_fanpage_url' ), time() + ( 86400 * 30 ), '/' );
+			setcookie('poc_foundation_fanpage_id', get_option( 'poc_foundation_fanpage_id' ), time() + ( 86400 * 30 ), '/' );
 			$ajax_handler->add_response_data( 'redirect_url', $permalink );
 			return;
 		}
@@ -124,8 +124,8 @@ class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_
 		$fanpage_data = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if( empty( $fanpage_data ) || ! isset( $fanpage_data['data'] ) || ! isset( $fanpage_data['data']['fanpage_url'] ) || ! isset( $fanpage_data['data']['fanpage_id'] ) ) {
-			$_COOKIE['poc_foundation_fanpage_url'] = get_option( 'poc_foundation_fanpage_url' );
-			$_COOKIE['poc_foundation_fanpage_id'] = get_option( 'poc_foundation_fanpage_id' );
+			setcookie('poc_foundation_fanpage_url', get_option( 'poc_foundation_fanpage_url' ), time() + ( 86400 * 30 ), '/' );
+			setcookie('poc_foundation_fanpage_id', get_option( 'poc_foundation_fanpage_id' ), time() + ( 86400 * 30 ), '/' );
 			$ajax_handler->add_response_data( 'redirect_url', $permalink );
 			return;
 		}
