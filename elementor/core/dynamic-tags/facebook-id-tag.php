@@ -29,7 +29,10 @@ class Facebook_ID_Tag extends \Elementor\Core\DynamicTags\Tag
 
 	public function render()
 	{
-		$fanpage_id = ( isset( $_COOKIE['poc_foundation_fanpage_id'] ) ) ? $_COOKIE['poc_foundation_fanpage_id'] : get_option( 'poc_foundation_fanpage_id' );
-		echo get_option( 'poc_foundation_chatbot_backlink' ) . $fanpage_id;
+		if ( isset( $_COOKIE['poc_foundation_fanpage_id'] ) ) {
+			echo get_option( 'poc_foundation_chatbot_backlink' ) . $_COOKIE['poc_foundation_fanpage_id'];
+		} else {
+			echo 'https://messenger.com/t/' . get_option( 'poc_foundation_fanpage_id' );
+		}
 	}
 }
