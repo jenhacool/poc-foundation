@@ -95,17 +95,9 @@ class POC_Foundation {
 
 	    add_action( 'elementor_pro/init', array( $this, 'add_elementor_form_action' ) );
 
-	    add_action( 'elementor/dynamic_tags/register_tags', function( $dynamic_tags ) {
-		    \Elementor\Plugin::$instance->dynamic_tags->register_group( 'poc-foundation-dynamic-tags', [
-			    'title' => 'POC Foundation'
-		    ] );
+	    add_action( 'elementor/dynamic_tags/register_tags', array( $this, 'register_dynamic_tags' ) );
 
-		    include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/facebook-url-tag.php' );
-		    include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/facebook-id-tag.php' );
-
-		    $dynamic_tags->register_tag( 'Facebook_URL_Tag' );
-		    $dynamic_tags->register_tag( 'Facebook_ID_Tag' );
-	    } );
+	    add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
     }
 
     /**
@@ -497,6 +489,11 @@ class POC_Foundation {
                         <th scope="row">Fanpage ID</th>
                         <td><input type="text" name="poc_foundation_fanpage_id" value="<?php echo esc_attr( get_option( 'poc_foundation_fanpage_id' ) ); ?>" /></td>
                     </tr>
+
+                    <tr valign="top">
+                        <th scope="row">Chatbot Backlink</th>
+                        <td><input type="text" name="poc_foundation_chatbot_backlink" value="<?php echo esc_attr( get_option( 'poc_foundation_chatbot_backlink' ) ); ?>"></td>
+                    </tr>
                 </table>
                 <?php submit_button( 'Save Settings' ); ?>
             </form>
@@ -514,6 +511,7 @@ class POC_Foundation {
         register_setting( 'poc_foundation_option_group', 'poc_foundation_redirect_page' );
         register_setting( 'poc_foundation_option_group', 'poc_foundation_fanpage_id' );
 	    register_setting( 'poc_foundation_option_group', 'poc_foundation_fanpage_url' );
+	    register_setting( 'poc_foundation_option_group', 'poc_foundation_chatbot_backlink' );
     }
 
 	/**
@@ -530,6 +528,71 @@ class POC_Foundation {
         ) );
 
         \ElementorPro\Plugin::instance()->modules_manager->get_modules( 'forms' )->add_form_action( $poc_affiliate_notifier->get_name(), $poc_affiliate_notifier );
+    }
+
+    public function register_dynamic_tags( $dynamic_tags )
+    {
+        \Elementor\Plugin::$instance->dynamic_tags->register_group( 'poc-foundation-dynamic-tags', [
+            'title' => 'POC Foundation'
+        ] );
+
+        include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/facebook-url-tag.php' );
+        include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/facebook-id-tag.php' );
+
+        $dynamic_tags->register_tag( 'Facebook_URL_Tag' );
+        $dynamic_tags->register_tag( 'Facebook_ID_Tag' );
+    }
+
+    public function register_rest_routes()
+    {
+	    register_rest_route(
+		    'poc-foundation/v1',
+		    '/get_fanpage',
+		    array(
+			    'methods' => 'POST',
+			    'callback' => array( $this, 'get_fanpage' )
+		    )
+	    );
+    }
+
+    public function get_fanpage( $request ) {
+	    $params = $request->get_json_params();
+
+	    $ref_by = $params['ref_by'];
+
+	    $response = wp_remote_get( get_option( 'poc_foundation_api_endpoint' ) . '/website/get_fanpage/' . $ref_by, array(
+		    'headers' => array(
+			    'Content-Type' => 'application/json',
+			    'api-key' => get_option( 'poc_foundation_api_key' )
+		    ),
+	    ) );
+
+	    if ( is_wp_error( $response ) ) {
+		    return $this->rest_response( array(
+			    'link' => ''
+		    ) );
+	    }
+
+	    $fanpage_data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+	    if ( empty( $fanpage_data ) || ! isset( $fanpage_data['data'] ) || ! isset( $fanpage_data['data']['fanpage_url'] ) || ! isset( $fanpage_data['data']['fanpage_id'] ) ) {
+		    return $this->rest_response( array(
+			    'link' => ''
+		    ) );
+	    }
+
+	    return $this->rest_response( array(
+            'link' => 'https://www.messenger.com/t/' . $fanpage_data['fanpage_id']
+        ) );
+    }
+
+    protected function rest_response( $data )
+    {
+	    $response = new \WP_REST_Response( $data );
+
+	    $response->set_status( 200 );
+
+	    return $response;
     }
 
     /**

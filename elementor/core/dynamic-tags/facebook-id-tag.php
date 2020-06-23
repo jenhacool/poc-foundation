@@ -4,12 +4,12 @@ class Facebook_ID_Tag extends \Elementor\Core\DynamicTags\Tag
 {
 	public function get_name()
 	{
-		return 'fanpage-id';
+		return 'messenger_url';
 	}
 
 	public function get_title()
 	{
-		return __( 'Fanpage ID', 'elementor-pro' );
+		return __( 'Messenger URL', 'elementor-pro' );
 	}
 
 	public function get_group()
@@ -30,6 +30,6 @@ class Facebook_ID_Tag extends \Elementor\Core\DynamicTags\Tag
 	public function render()
 	{
 		$fanpage_id = ( isset( $_COOKIE['poc_foundation_fanpage_id'] ) ) ? $_COOKIE['poc_foundation_fanpage_id'] : get_option( 'poc_foundation_fanpage_id' );
-		echo 'https://www.messenger.com/t/' . $fanpage_id;
+		echo get_option( 'poc_foundation_chatbot_backlink' ) . $fanpage_id;
 	}
 }
