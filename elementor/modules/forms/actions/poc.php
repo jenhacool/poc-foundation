@@ -56,12 +56,17 @@ class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_
 
 		$fields['domain'] = $this->config['domain'];
 
-		if ( isset( $_COOKIE['ref_by'] ) ) {
-			$fields['ref_by'] = $_COOKIE['ref_by'];
+		if ( ! isset( $fields['ref_by'] ) ) {
+			$fields['ref_by'] = ( isset( $_COOKIE['ref_by'] ) ) ? $_COOKIE['ref_by'] : '';
 		}
 
-		if ( isset( $_COOKIE['subid'] ) ) {
-			$fields['subid'] = $_COOKIE['subid'];
+		if ( empty( $fields['ref_by'] ) ) {
+			$ajax_handler->add_error_message( __( 'Failed. Please try again.', 'poc-foundation' ) );
+			return;
+		}
+
+		if ( ! isset( $fields['subid'] ) ) {
+			$fields['subid'] = ( isset( $_COOKIE['subid'] ) ) ? $_COOKIE['subid'] : '';
 		}
 
 		if ( ! isset( $fields['name'] ) || empty( $fields['name'] ) ) {

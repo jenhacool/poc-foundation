@@ -538,9 +538,13 @@ class POC_Foundation {
 
         include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/facebook-url-tag.php' );
         include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/facebook-id-tag.php' );
+	    include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/poc-ref-by-tag.php' );
+	    include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/poc-subid-tag.php' );
 
         $dynamic_tags->register_tag( 'Facebook_URL_Tag' );
         $dynamic_tags->register_tag( 'Facebook_ID_Tag' );
+	    $dynamic_tags->register_tag( 'POC_Ref_By_Tag' );
+	    $dynamic_tags->register_tag( 'POC_SubID_Tag' );
     }
 
     public function register_rest_routes()
