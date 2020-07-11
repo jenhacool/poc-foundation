@@ -107,7 +107,7 @@ class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_
 
 		$permalink = get_permalink( get_option( 'poc_foundation_redirect_page', '' ) );
 
-		if( ! $permalink || ! $_COOKIE['ref_by'] ) {
+		if( ! $permalink ) {
 			$ajax_handler->add_success_message( __( 'Success', 'poc-foundation' ) );
 			return;
 		}
