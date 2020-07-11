@@ -119,9 +119,12 @@ class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_
 			),
 		) );
 
+		$data = array(
+			'poc_foundation_fanpage_url' => get_option( 'poc_foundation_fanpage_url' ),
+			'poc_foundation_fanpage_id' => get_option( 'poc_foundation_fanpage_id' )
+		);
+
 		if( is_wp_error( $response ) ) {
-			setcookie('poc_foundation_fanpage_url', get_option( 'poc_foundation_fanpage_url' ), time() + ( 86400 * 30 ), '/' );
-			setcookie('poc_foundation_fanpage_id', get_option( 'poc_foundation_fanpage_id' ), time() + ( 86400 * 30 ), '/' );
 			$ajax_handler->add_response_data( 'redirect_url', $permalink );
 			return;
 		}
@@ -129,15 +132,22 @@ class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_
 		$fanpage_data = json_decode( wp_remote_retrieve_body( $response ), true );
 
 		if( empty( $fanpage_data ) || ! isset( $fanpage_data['data'] ) || ! isset( $fanpage_data['data']['fanpage_url'] ) || ! isset( $fanpage_data['data']['fanpage_id'] ) ) {
-			setcookie('poc_foundation_fanpage_url', get_option( 'poc_foundation_fanpage_url' ), time() + ( 86400 * 30 ), '/' );
-			setcookie('poc_foundation_fanpage_id', get_option( 'poc_foundation_fanpage_id' ), time() + ( 86400 * 30 ), '/' );
 			$ajax_handler->add_response_data( 'redirect_url', $permalink );
 			return;
 		}
 
-		setcookie('poc_foundation_fanpage_url', $fanpage_data['data']['fanpage_url'], time() + (86400 * 30), "/");
-		setcookie('poc_foundation_fanpage_id', $fanpage_data['data']['fanpage_id'], time() + (86400 * 30), "/");
-		$ajax_handler->add_response_data( 'redirect_url', $permalink );
+		$transient_key = wp_generate_password( 13, false );
+
+		set_transient(
+			$transient_key,
+			array(
+				'poc_foundation_fanpage_url' => $fanpage_data['data']['fanpage_url'],
+				'poc_foundation_fanpage_id' => $fanpage_data['data']['fanpage_id'],
+			),
+			HOUR_IN_SECONDS
+		);
+
+		$ajax_handler->add_response_data( 'redirect_url', $permalink . '?poc_key=' . $transient_key );
 		return;
 	}
 }
