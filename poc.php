@@ -4,7 +4,7 @@
  * Plugin URI: https://poc.foundation/
  * Description: POC Referral system for Woocommerce
  * Version: 3.9.2
- * Author: Automattic
+ * Author: POC
  * Author URI: https://poc.foundation
  * Text Domain: poc.foundation
  * Domain Path: /i18n/languages/
