@@ -112,17 +112,12 @@ class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_
 			return;
 		}
 
-		$response = wp_remote_get( $this->config['api_endpoint'] . '/website/get_fanpage/' . $_COOKIE['ref_by'], array(
+		$response = wp_remote_get( $this->config['api_endpoint'] . '/website/get_fanpage/' . $fields['ref_by'], array(
 			'headers' => array(
 				'Content-Type' => 'application/json; charset=utf-8',
 				'api-key' => get_option( 'poc_foundation_api_key' )
 			),
 		) );
-
-		$data = array(
-			'poc_foundation_fanpage_url' => get_option( 'poc_foundation_fanpage_url' ),
-			'poc_foundation_fanpage_id' => get_option( 'poc_foundation_fanpage_id' )
-		);
 
 		if( is_wp_error( $response ) ) {
 			$ajax_handler->add_response_data( 'redirect_url', $permalink );
