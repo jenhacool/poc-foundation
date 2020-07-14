@@ -1,0 +1,26 @@
+{
+    "name": "macbook/poc-foundation",
+    "authors": [
+        {
+            "name": "Tien Nguyen",
+            "email": "mrtienhp97@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "POC\\Foundation\\": "app/"
+        },
+        "classmap": [
+            "app/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "POC\\Foundation\\Tests\\": "tests/"
+        }
+    },
+    "require": {},
+    "require-dev": {
+        "mockery/mockery": "^1.4"
+    }
+}
