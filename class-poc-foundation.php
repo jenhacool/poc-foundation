@@ -187,7 +187,8 @@ class POC_Foundation {
 
         $this->write_log("Added an affiliate TX:: username: ".$username." / ref_by: ".$ref_by." / uid: ".$this->get_uid_prefix()."-".$order_id." / amount: ".$amount." / release: ".$release);
 
-        $result = $this->send_request( "http://51.158.174.189:3002/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
+        $result = $this->send_request( self::$api_endpoint . "/transaction/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
+	    $result = json_decode( $result, true );
         if ($result != "Done")  $this->write_log("Error while adding an affiliate TX:: username: ".$username." / uid: ".$this->get_uid_prefix().$order_id." / amount: ".$amount." / release: ".$release);
     }
 
@@ -606,28 +607,28 @@ class POC_Foundation {
      */
     protected function get_poc_price()
     {
-        $price = $this->send_request( self::$api_endpoint . '/getprice/poc' );
-        if (is_numeric($price) && $price > 0) {
-            return $price;
-        } else {
-            // Try again after 1s
-            sleep(1);
-            $price = $this->send_request( self::$api_endpoint . '/getprice/poc' );
-            if (is_numeric($price) && $price > 0) {
-                return $price;
-            } else {
-                // Try again after 1s
-                sleep(1);
-                $price = $this->send_request( self::$api_endpoint . '/getprice/poc' );
-                if (is_numeric($price) && $price > 0) {
-                    return $price;
-                } else {
-                    // Try again after 1s
-                    sleep(1);
-                    return false;
-                }
-            }
-        }
+	    $price = json_decode( $this->send_request( self::$api_endpoint . '/getprice/poc' ), true );
+	    if ($price && is_numeric($price['data']['price']) && $price['data']['price'] > 0) {
+		    return $price['data']['price'];
+	    } else {
+		    // Try again after 1s
+		    sleep(1);
+		    $price = json_decode( $this->send_request( self::$api_endpoint . '/getprice/poc' ), true );
+		    if ($price && is_numeric($price['data']['price']) && $price['data']['price'] > 0) {
+			    return $price['data']['price'];
+		    } else {
+			    // Try again after 1s
+			    sleep(1);
+			    $price = json_decode( $this->send_request( self::$api_endpoint . '/getprice/poc' ), true );
+			    if ($price && is_numeric($price['data']['price']) && $price['data']['price'] > 0) {
+				    return $price['data']['price'];
+			    } else {
+				    // Try again after 1s
+				    sleep(1);
+				    return false;
+			    }
+		    }
+	    }
     }
 
     /**
