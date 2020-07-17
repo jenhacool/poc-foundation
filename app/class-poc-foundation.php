@@ -7,6 +7,8 @@ use POC\Foundation\Utilities\SingletonTrait;
 class POC_Foundation {
     use SingletonTrait;
 
+    public $admin;
+
     /**
      * API Endpoint
      *
@@ -47,11 +49,7 @@ class POC_Foundation {
      */
     protected function __construct()
     {
-        if ( ! $this->check_license() ) {
-            return;
-        }
-
-        $this->add_hooks();
+        $this->init();
     }
 
     public function init()
@@ -61,17 +59,37 @@ class POC_Foundation {
 		    return;
 	    }
 
+	    $this->init_classes();
+
 	    $this->add_hooks();
+
+//	    $response = wp_remote_post(
+//            'http://127.0.0.1:3000/elementor_activate',
+//            array(
+//                'headers' => array(
+//	                'Content-Type' => 'application/json; charset=utf-8'
+//                ),
+//                'body' => json_encode( array(
+//                    'foo' => 'bar'
+//                ) )
+//            )
+//        );
     }
 
 	protected function check_license()
 	{
+	    return true;
         return ( new POC_Foundation_License() )->check_license();
 	}
 
     protected function add_license_notice()
     {
 
+    }
+
+    protected function init_classes()
+    {
+        $this->admin = new POC_Foundation_Admin();
     }
 
     /**
@@ -102,8 +120,6 @@ class POC_Foundation {
         add_filter( 'woocommerce_coupon_get_discount_amount', array( $this, 'get_discount_amount' ), 10, 6 );
 
         add_action( 'woocommerce_before_cart', array( $this, 'apply_coupon_by_ref_by' ) );
-
-        add_action( 'admin_menu', array( $this, 'register_options_page' ) );
 
         add_action( 'admin_init', array( $this, 'register_plugin_settings' ) );
 
@@ -435,20 +451,6 @@ class POC_Foundation {
         $cart->add_discount( $ref_by );
 
         wc_print_notices();
-    }
-
-    /**
-     * Plugin options page
-     */
-    public function register_options_page()
-    {
-        add_menu_page(
-            'POC Foundation',
-            'POC Foundation',
-            'manage_options',
-            'poc-foundation',
-            array( $this, 'options_page_html' )
-        );
     }
 
     /**

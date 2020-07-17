@@ -49,13 +49,12 @@ class POC_Foundation {
             self::$instance = new self();
         }
 
+        wp_die('abc');
+
         return self::$instance;
     }
 
-    /**
-     * POC_Foundation constructor.
-     */
-    protected function __construct()
+    public function init()
     {
         $this->add_hooks();
     }

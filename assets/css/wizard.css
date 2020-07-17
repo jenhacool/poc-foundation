@@ -1,0 +1,62 @@
+#poc-foundation-wizard .wizard-steps .step {
+  visibility: hidden;
+}
+#poc-foundation-wizard .wizard-steps .step.active-step {
+  visibility: visible;
+}
+#poc-foundation-wizard .wizard-steps .step .detail ul {
+  margin: 1em 0;
+}
+#poc-foundation-wizard .wizard-nav {
+  list-style: none;
+  display: -webkit-flex;
+  display: flex;
+  justify-content: space-around;
+}
+#poc-foundation-wizard .wizard-nav li {
+  opacity: 1;
+  transition: all 0.25s;
+}
+#poc-foundation-wizard .wizard-nav li.active-step {
+  color: #0073aa;
+}
+#poc-foundation-wizard .wizard-nav li.done-step {
+  opacity: 0.5;
+}
+#poc-foundation-wizard .wizard-nav li .dashicons {
+  font-size: 2em;
+}
+#poc-foundation-wizard.loaded .step {
+  visibility: visible;
+  display: none;
+}
+#poc-foundation-wizard.loaded .step.active-step {
+  display: list-item;
+}
+#poc-foundation-wizard.spinning .spinner {
+  visibility: visible;
+  float: none;
+  text-align: center;
+}
+#poc-foundation-wizard.spinning .step-loading {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.8);
+}
+#poc-foundation-wizard.spinning .step-loading .spinner {
+  float: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  visibility: visible;
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+#poc-foundation-wizard.spinning a.do-it {
+  visibility: hidden;
+}
+
+/*# sourceMappingURL=wizard.css.map */

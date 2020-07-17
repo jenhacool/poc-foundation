@@ -1,0 +1,83 @@
+#poc-foundation-wizard {
+  .wizard-steps {
+    .step {
+      visibility: hidden;
+
+      &.active-step {
+        visibility: visible;
+      }
+
+      .detail {
+        ul {
+          margin: 1em 0;
+        }
+      }
+    }
+  }
+
+  .wizard-nav {
+    list-style: none;
+    display: -webkit-flex;
+    display: flex;
+    justify-content: space-around;
+
+    li {
+      opacity: 1;
+      transition: all 0.25s;
+
+      &.active-step {
+        color: #0073aa;
+      }
+
+      &.done-step {
+        opacity: 0.5;
+      }
+
+      .dashicons {
+        font-size: 2em;
+      }
+    }
+  }
+
+  &.loaded {
+    .step {
+      visibility: visible;
+      display: none;
+
+      &.active-step {
+        display: list-item;
+      }
+    }
+  }
+
+  &.spinning {
+    .spinner {
+      visibility: visible;
+      float: none;
+      text-align: center;
+    }
+
+    .step-loading {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255,255,255,0.8);
+
+      .spinner {
+        float: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        visibility: visible;
+        -webkit-transform: translate(-50%,-50%);
+        transform: translate(-50%,-50%);
+      }
+    }
+
+    a.do-it {
+      visibility: hidden;
+    }
+  }
+}

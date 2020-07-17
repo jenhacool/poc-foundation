@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name: Poc Foundation for Woocommerce
+ * Plugin Name: Poc Foundation
  * Plugin URI: https://poc.foundation/
  * Description: POC Referral system for Woocommerce
  * Version: 3.9.2

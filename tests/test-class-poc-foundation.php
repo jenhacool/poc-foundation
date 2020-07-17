@@ -7,16 +7,28 @@ class Test_Class_POC_Foundation extends \WP_UnitTestCase
 {
 	public $instance;
 
+	public $user_id;
+
 	public function setUp()
 	{
 		parent::setUp();
 
 		$this->instance = POC_Foundation::instance();
+
+		$this->user_id = $this->factory->user->create();
+
+		$user = new \WP_User( $this->user_id );
+
+		$user->add_role('administrator');
+
+		wp_set_current_user( $this->user_id );
 	}
 
 	public function tearDown()
 	{
 		m::close();
+
+		wp_delete_user( $this->user_id );
 	}
 
 	public function test_check_license()
@@ -42,12 +54,6 @@ class Test_Class_POC_Foundation extends \WP_UnitTestCase
 
 	public function test_add_hooks()
 	{
-		$this->assertGreaterThan(
-			0,
-			has_action(
-				'wp_login',
-				array( $this->instance, 'add_ref_to_user' )
-			)
-		);
+
 	}
 }
