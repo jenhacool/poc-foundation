@@ -187,9 +187,9 @@ class POC_Foundation {
 
         $this->write_log("Added an affiliate TX:: username: ".$username." / ref_by: ".$ref_by." / uid: ".$this->get_uid_prefix()."-".$order_id." / amount: ".$amount." / release: ".$release);
 
-        $result = $this->send_request( self::$api_endpoint . "/transaction/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
+	    $result = $this->send_request( self::$api_endpoint . "/transaction/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
 	    $result = json_decode( $result, true );
-        if ($result != "Done")  $this->write_log("Error while adding an affiliate TX:: username: ".$username." / uid: ".$this->get_uid_prefix().$order_id." / amount: ".$amount." / release: ".$release);
+	    if ($result['message'] != "Done")  $this->write_log("Error while adding an affiliate TX:: username: ".$username." / uid: ".$this->get_uid_prefix().$order_id." / amount: ".$amount." / release: ".$release);
     }
 
     /**
@@ -723,21 +723,21 @@ class POC_Foundation {
     {
         $coupon_code = strtolower( $coupon_code );
 
-        $response = wp_remote_get( self::$api_endpoint . '/user/' . $coupon_code );
+	    $response = wp_remote_get( "https://api.poc.me/api/user/$coupon_code" );
 
-        if( is_wp_error( $response ) ) {
-            return false;
-        }
+	    if( is_wp_error( $response ) ) {
+		    return false;
+	    }
 
-        $body = wp_remote_retrieve_body( $response );
+	    $body = wp_remote_retrieve_body( $response );
 
-        $data = json_decode( $body, true );
+	    $data = json_decode( $body, true );
 
-        if( is_null( $data ) || $data['message'] != 'success' || empty( $data['data'] ) ) {
-            return false;
-        }
+	    if( is_null( $data ) || $data['message'] != 'success' ) {
+		    return false;
+	    }
 
-        return true;
+	    return true;
     }
 
     /**
