@@ -12,6 +12,41 @@
           margin: 1em 0;
         }
       }
+
+      .plugin-list {
+        li {
+          padding: 0.5em 1em;
+
+          &:nth-child(odd) {
+            background: #f9f9f9;
+          }
+
+          span {
+            float: right;
+
+            .spinner {
+              margin: 0;
+            }
+          }
+        }
+      }
+
+      .plugin-config {
+        .plugin-config-row {
+          display: flex;
+          align-items: center;
+          margin-bottom: 1em;
+
+          label {
+            flex: 0 0 140px;
+            max-width: 140px;
+          }
+
+          input, select {
+            flex-grow: 1;
+          }
+        }
+      }
     }
   }
 

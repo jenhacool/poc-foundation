@@ -7,6 +7,30 @@
 #poc-foundation-wizard .wizard-steps .step .detail ul {
   margin: 1em 0;
 }
+#poc-foundation-wizard .wizard-steps .step .plugin-list li {
+  padding: 0.5em 1em;
+}
+#poc-foundation-wizard .wizard-steps .step .plugin-list li:nth-child(odd) {
+  background: #f9f9f9;
+}
+#poc-foundation-wizard .wizard-steps .step .plugin-list li span {
+  float: right;
+}
+#poc-foundation-wizard .wizard-steps .step .plugin-list li span .spinner {
+  margin: 0;
+}
+#poc-foundation-wizard .wizard-steps .step .plugin-config .plugin-config-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1em;
+}
+#poc-foundation-wizard .wizard-steps .step .plugin-config .plugin-config-row label {
+  flex: 0 0 140px;
+  max-width: 140px;
+}
+#poc-foundation-wizard .wizard-steps .step .plugin-config .plugin-config-row input, #poc-foundation-wizard .wizard-steps .step .plugin-config .plugin-config-row select {
+  flex-grow: 1;
+}
 #poc-foundation-wizard .wizard-nav {
   list-style: none;
   display: -webkit-flex;

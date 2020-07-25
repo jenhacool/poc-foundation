@@ -4,18 +4,7 @@ namespace POC\Foundation;
 
 class POC_Foundation_License_Server
 {
-	public $licensekey;
-
-	public $localkey;
-
-	public function __construct( $licensekey, $localkey = '' )
-	{
-		$this->licensekey = $licensekey;
-
-		$this->localkey = $localkey;
-	}
-
-	public function check()
+	public function check( $licensekey, $localkey = '' )
 	{
 		$whmcsurl = $this->get_whmcs_url();
 
@@ -24,10 +13,6 @@ class POC_Foundation_License_Server
 		$localkeydays = $this->get_local_key_days();
 
 		$allowcheckfaildays = $this->get_allow_check_fail_days();
-
-		$localkey = $this->localkey;
-
-		$licensekey = $this->licensekey;
 
 		$check_token = time() . md5(mt_rand(100000000, mt_getrandmax()) . $licensekey);
 		$checkdate = date("Ymd");

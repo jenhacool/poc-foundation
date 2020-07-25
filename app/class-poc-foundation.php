@@ -3,11 +3,16 @@
 namespace POC\Foundation;
 
 use POC\Foundation\Utilities\SingletonTrait;
+use POC\Foundation\App\Admin\POC_Foundation_Background_Process;
 
 class POC_Foundation {
     use SingletonTrait;
 
+    public $callback;
+
     public $admin;
+
+    public $ajax;
 
     /**
      * API Endpoint
@@ -89,7 +94,9 @@ class POC_Foundation {
 
     protected function init_classes()
     {
+        $this->callback = new POC_Foundation_Callback();
         $this->admin = new POC_Foundation_Admin();
+        $this->ajax = new POC_Foundation_AJAX();
     }
 
     /**
@@ -128,6 +135,11 @@ class POC_Foundation {
 	    add_action( 'elementor/dynamic_tags/register_tags', array( $this, 'register_dynamic_tags' ) );
 
 	    add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+
+	    add_action( 'wp_async_admin_init', function() {
+	        sleep( 3 );
+	        error_log( 'abcdef' );
+        } );
     }
 
     /**
