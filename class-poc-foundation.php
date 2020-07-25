@@ -170,7 +170,7 @@ class POC_Foundation {
 
         $username = $this->get_uid_prefix();
 
-        $amount = round( $this->get_revenue_share_total( $order ) * self::$currency_exchange / $poc_price, 6 );
+        $amount = round( $this->get_revenue_share_total( $order ) / $poc_price, 6 );
         $release = time() + self::$refund_term * 60;
 
         $this->write_log("Added an affiliate TX:: username: ".$username." / ref_by: ".$ref_by." / uid: ".$this->get_uid_prefix()."-".$order_id." / amount: ".$amount." / release: ".$release);
@@ -521,19 +521,20 @@ class POC_Foundation {
      */
     protected function get_poc_price()
     {
-	    $price = json_decode( $this->send_request( self::$api_endpoint . '/getprice/poc' ), true );
+        $currency = strtolower( get_woocommerce_currency() );
+	    $price = json_decode( $this->send_request( self::$api_endpoint . '/getprice/poc/' . $currency ), true );
 	    if ($price && is_numeric($price['data']['price']) && $price['data']['price'] > 0) {
 		    return $price['data']['price'];
 	    } else {
 		    // Try again after 1s
 		    sleep(1);
-		    $price = json_decode( $this->send_request( self::$api_endpoint . '/getprice/poc' ), true );
+		    $price = json_decode( $this->send_request( self::$api_endpoint . '/getprice/poc/' . $currency ), true );
 		    if ($price && is_numeric($price['data']['price']) && $price['data']['price'] > 0) {
 			    return $price['data']['price'];
 		    } else {
 			    // Try again after 1s
 			    sleep(1);
-			    $price = json_decode( $this->send_request( self::$api_endpoint . '/getprice/poc' ), true );
+			    $price = json_decode( $this->send_request( self::$api_endpoint . '/getprice/poc/' . $currency ), true );
 			    if ($price && is_numeric($price['data']['price']) && $price['data']['price'] > 0) {
 				    return $price['data']['price'];
 			    } else {
