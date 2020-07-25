@@ -75,8 +75,6 @@ class POC_Foundation {
 
         add_action( 'wp_enqueue_scripts', array( $this, 'add_scripts' ) );
 
-        add_filter( 'do_shortcode_tag', array( $this, 'add_purchase_conversion_setup' ), 999, 2 );
-
         add_action( 'init', array( $this, 'handle_ajax_request' ) );
 
         add_action( 'woocommerce_product_options_general_product_data', array( $this, 'add_custom_product_data_field' ) );
@@ -214,61 +212,6 @@ class POC_Foundation {
     public function add_scripts()
     {
         wp_enqueue_script( 'poc-foundation-script', plugin_dir_url( __FILE__ ) . 'assets/c.js', array( 'jquery' ) );
-    }
-
-    /**
-     * Purchase conversion tracking setup
-     *
-     * @param $output
-     * @param $tag
-     *
-     * @return string
-     */
-    public function add_purchase_conversion_setup( $output, $tag )
-    {
-        global $wp;
-
-        if ( $tag != 'woocommerce_checkout' ) {
-            return $output;
-        }
-
-        if( empty( $wp->query_vars['order-received'] ) ) {
-            return $output;
-        }
-
-        $order_id = $wp->query_vars['order-received'];
-
-        if( ! $order_id ) {
-            return $output;
-        }
-
-        $order = wc_get_order( $order_id );
-
-        if( ! $order ) {
-            return $output;
-        }
-
-        if( ! $order->has_status( 'completed' ) ) {
-            return $output;
-        }
-
-        $html = '
-        <script data-cfasync="false" data-pagespeed-no-defer type="text/javascript">//<![CDATA[
-          dataLayer.push({
-            "event": "paymentCompleted",
-            "ConversionID": "1022110835",
-            "ConversionLabel": "VcZ0CPGB2M0BEPPYsOcD",
-            "ConversionValue": "'.$order->get_total() * self::$currency_exchange.'",
-            "ConversionOrderID": "'.$this->get_uid_prefix()."-".$order_id.'",
-            "ConversionCurrency": "USD",
-            "eventCallback": function() {
-              // alert("tessssss")
-              window.location = "https://loc.com.vn/thanh-toan-thanh-cong/"
-            }
-          })
-        //]]></script>';
-
-        return $output . $html;
     }
 
     /**
