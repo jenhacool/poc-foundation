@@ -75,8 +75,6 @@ class POC_Foundation {
 
         add_action( 'wp_enqueue_scripts', array( $this, 'add_scripts' ) );
 
-        add_action( 'init', array( $this, 'handle_ajax_request' ) );
-
         add_action( 'woocommerce_product_options_general_product_data', array( $this, 'add_custom_product_data_field' ) );
 
         add_action( 'woocommerce_process_product_meta', array( $this, 'save_custom_product_data_field' ) );
@@ -212,25 +210,6 @@ class POC_Foundation {
     public function add_scripts()
     {
         wp_enqueue_script( 'poc-foundation-script', plugin_dir_url( __FILE__ ) . 'assets/c.js', array( 'jquery' ) );
-    }
-
-    /**
-     * Handle ajax request
-     */
-    public function handle_ajax_request()
-    {
-        if ( ! empty( $_GET["poc_action"] ) && $_GET["poc_action"] == "getuid" ) {
-            echo md5(rand(0,999).microtime());
-            die();
-        }
-
-        if ( ! empty( $_GET["poc_crmuid_notify_url"] ) ) {
-            echo $this->send_get(
-                "https://crmuid.xyz/site/".$this->get_uid_prefix()."/url/".urlencode(base64_encode($_GET["poc_crmuid_notify_url"])),
-                ["crmuid: $_GET[crmuid]"]
-            );
-            die();
-        }
     }
 
     /**
