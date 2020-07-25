@@ -123,24 +123,16 @@ class POC_Foundation {
             return;
         }
 
-        $ref_by = ! empty( $_COOKIE['ref_by'] ) ? $_COOKIE['ref_by'] : get_user_meta( get_current_user_id(), 'ref_by', true );
+	    $coupon_codes = $order->get_coupon_codes();
 
-        if( empty( $ref_by ) ) {
-            $coupon_codes = $order->get_coupon_codes();
+        if ( ! empty( $coupon_codes ) && $this->is_coupon_valid( $coupon_codes[0] ) ) {
+            $ref_by = $coupon_codes[0];
+        } else {
+	        $ref_by = ! empty( $_COOKIE['ref_by'] ) ? $_COOKIE['ref_by'] : get_user_meta( get_current_user_id(), 'ref_by', true );
+        }
 
-            if( empty( $coupon_codes ) ) {
-                return;
-            }
-
-            $coupon_code = $coupon_codes[0];
-
-            $this->write_log( "Coupon code: $coupon_code" );
-
-            if( ! $this->is_coupon_valid( $coupon_code ) ) {
-                return;
-            }
-
-            $ref_by = $coupon_code;
+        if ( empty( $ref_by ) ) {
+            return;
         }
 
         add_post_meta( $order_id, 'ref_by', $ref_by );
