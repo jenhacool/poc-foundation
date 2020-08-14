@@ -2,6 +2,8 @@
 
 namespace POC\Foundation;
 
+use POC\Foundation\License\POC_Foundation_License;
+
 class POC_Foundation_AJAX
 {
 	public function __construct()
@@ -17,6 +19,15 @@ class POC_Foundation_AJAX
 
 		add_action( 'wp_ajax_poc_foundation_save_config', array( $this, 'save_config' ) );
 		add_action( 'wp_ajax_nopriv_poc_foundation_save_config', array( $this, 'save_config' ) );
+
+		add_action( 'wp_ajax_poc_foundation_check_elementor_pro_status', array( $this, 'check_elementor_pro_status' ) );
+		add_action( 'wp_ajax_nopriv_poc_foundation_check_elementor_pro_status', array( $this, 'check_elementor_pro_status' ) );
+
+		add_action( 'wp_ajax_poc_foundation_check_api_key', array( $this, 'check_api_key' ) );
+		add_action( 'wp_ajax_nopriv_poc_foundation_check_api_key', array( $this, 'check_api_key' ) );
+
+		add_action( 'wp_ajax_poc_foundation_save_campaign', array( $this, 'save_campaign' ) );
+		add_action( 'wp_ajax_nopriv_poc_foundation_save_campaign', array( $this, 'save_campaign' ) );
 	}
 
 	public function check_license_key()
@@ -25,16 +36,10 @@ class POC_Foundation_AJAX
 			return $this->error_response();
 		}
 
-		$license_data = $this->get_license_server()->check( $_POST['license_key'] );
-
-		if ( $license_data['status'] === 'Active' ) {
-			return $this->success_response( array(
-				'is_valid' => true
-			) );
-		}
+		$is_valid = $this->get_license_manager()->check_license( $_POST['license_key'], true );
 
 		return $this->success_response( array(
-			'is_valid' => false
+			'is_valid' => $is_valid,
 		) );
 	}
 
@@ -48,10 +53,6 @@ class POC_Foundation_AJAX
 
 		if ( ! $setup ) {
 			return $this->error_response();
-		}
-
-		if ( $setup === 'processing' ) {
-			return $this->success_response( array( 'status' => 'processing' ) );
 		}
 
 		return $this->success_response( array( 'status' => 'done' ) );
@@ -73,8 +74,6 @@ class POC_Foundation_AJAX
 		$data = array();
 		parse_str( $_POST['poc_foundation_config'], $data );
 
-		var_dump($data);
-
 		foreach ( $data as $key => $config ) {
 			update_option( $key, $config );
 		}
@@ -82,9 +81,38 @@ class POC_Foundation_AJAX
 		return $this->success_response();
 	}
 
-	protected function get_license_server()
+	public function save_campaign()
 	{
-		return new POC_Foundation_License_Server();
+		if ( ! isset( $_POST['campaign'] ) || empty( $_POST['campaign'] ) ) {
+			return $this->error_response();
+		}
+
+		$data = array();
+		parse_str( $_POST['campaign'], $data );
+
+		$update = update_option( 'poc_foundation_campaign', serialize( $data['poc_foundation_campaign'] ) );
+
+		if ( ! $update ) {
+			return $this->error_response();
+		}
+
+		return $this->success_response();
+	}
+
+	public function check_elementor_pro_status()
+	{
+		$plugin_manager = $this->get_plugin_manager();
+
+		if ( $plugin_manager->is_plugin_installed( 'elementor-pro' ) && $plugin_manager->is_plugin_active( 'elementor-pro' ) && $plugin_manager->get_elementor_pro_handler()->is_license_valid() ) {
+			return $this->success_response( array( 'status' => 'done' ) );
+		}
+
+		return $this->success_response( array( 'status' => 'processing' ) );
+	}
+
+	protected function get_license_manager()
+	{
+		return new POC_Foundation_License();
 	}
 
 	protected function get_plugin_manager()

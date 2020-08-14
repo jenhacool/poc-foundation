@@ -1,6 +1,6 @@
 <?php
 
-class Facebook_ID_Tag extends \Elementor\Core\DynamicTags\Tag
+class Messenger_URL_Tag extends \Elementor\Core\DynamicTags\Tag
 {
 	public function get_name()
 	{
@@ -9,7 +9,7 @@ class Facebook_ID_Tag extends \Elementor\Core\DynamicTags\Tag
 
 	public function get_title()
 	{
-		return __( 'Messenger URL', 'elementor-pro' );
+		return __( 'Messenger URL', 'poc-foundation' );
 	}
 
 	public function get_group()

@@ -35,17 +35,17 @@ class POC_Foundation_Setup_Wizard
 				'title' => __( 'License', 'poc_foundation' ),
 				'icon' => 'dashboard',
 				'view' => 'get_step_license',
-				'callback' => 'do_next_step',
+				'callback' => 'check_license',
 				'button_text' => __( 'Check license', 'poc-foundation' ),
 				'can_skip' => false
 			),
-			'plugins' => array(
-				'id' => 'plugins',
-				'title' => __( 'Plugins', 'poc_foundation' ),
+			'campaign' => array(
+				'id' => 'campaign',
+				'title' => __( 'Campaigns', 'poc_foundation' ),
 				'icon' => 'dashboard',
-				'view' => 'get_step_plugins',
-				'callback' => 'install_plugins',
-				'button_text' => __( 'Install & Update Plugins', 'poc-foundation' ),
+				'view' => 'get_step_campaign',
+				'callback' => 'save_campaign',
+				'button_text' => __( 'Save Campaign', 'poc-foundation' ),
 				'can_skip' => false
 			),
 			'config' => array(
@@ -55,6 +55,15 @@ class POC_Foundation_Setup_Wizard
 				'view' => 'get_step_config',
 				'callback' => 'save_config',
 				'button_text' => __( 'Save Config', 'poc-foundation' ),
+				'can_skip' => false
+			),
+			'plugins' => array(
+				'id' => 'plugins',
+				'title' => __( 'Plugins', 'poc_foundation' ),
+				'icon' => 'dashboard',
+				'view' => 'get_step_plugins',
+				'callback' => 'install_plugins',
+				'button_text' => __( 'Install & Update Plugins', 'poc-foundation' ),
 				'can_skip' => false
 			),
 			'done' => array(
@@ -78,9 +87,9 @@ class POC_Foundation_Setup_Wizard
 	{
 		$content = array();
 		$content['summary'] = sprintf( '<p>%s</p>', 'Enter your license key here to start using this plugin.', 'poc-foundation' );
-		$content['detail'] = '<form action="" method="POST">';
+		$content['detail'] = '<form action="" method="POST" id="check-license-form">';
 		$content['detail'] .= wp_nonce_field( 'poc_foundation_install_plugins', 'poc_foundation_install_plugins' );
-		$content['detail'] .= '<p><input type="text" /></p>';
+		$content['detail'] .= '<p><input type="text" name="license_key" id="license-key" style="width: 100%" /></p>';
 		$content['detail'] .= '</form>';
 		
 		return $content;
@@ -125,6 +134,38 @@ class POC_Foundation_Setup_Wizard
 		return $content;
 	}
 
+	public function get_step_campaign()
+	{
+		$content = array();
+
+		$content['summary'] = sprintf(
+			'<p>%s</p>',
+			__( 'Add campaign data', 'poc-foundation' )
+		);
+
+		$default_data = serialize( array(
+			array(
+				'api_key' => '',
+				'domain' => '',
+				'redirect_page' => '',
+				'success_page' => '',
+				'chatbot_link' => '',
+				'fanpage_url' => '',
+				'fanpage_id' => '',
+			)
+		) );
+
+		$campaign_data = unserialize( get_option( 'poc_foundation_campaign', $default_data ) );
+
+		ob_start();
+
+		include_once POC_FOUNDATION_PLUGIN_DIR . 'app/admin/views/html-campaign-setting-form.php';
+
+		$content['detail'] = ob_get_clean();
+
+		return $content;
+	}
+
 	public function get_step_config()
 	{
 		$content = array();
@@ -135,17 +176,8 @@ class POC_Foundation_Setup_Wizard
 		);
 
 		$content['detail'] = '<div class="plugin-config"><form id="plugin-config-form">';
-		$content['detail'] .= '<div class="plugin-config-row"><label>API Key</label><input type="text" name="poc_foundation_api_key" value="' . esc_attr( get_option( 'poc_foundation_api_key' ) ) . '" /></div>';
-		$content['detail'] .= '<div class="plugin-config-row"><label>UID Prefix</label><input type="text" name="poc_foundation_uid_prefix" value="' . esc_attr( get_option( 'poc_foundation_uid_prefix' ) ) . '" /></div>';
-		$content['detail'] .= '<div class="plugin-config-row"><label>Redirect Page</label><select name="poc_foundation_redirect_page" id="">';
-		foreach ( get_pages() as $page ) {
-			$selected = ( get_option( 'poc_foundation_redirect_page' ) == $page->ID ) ? 'selected' : '';
-			$content['detail'] .= '<option value="' . $page->ID . '" ' . $selected . '>' . $page->post_title . '</option>';
-		}
-        $content['detail'] .= '</select></div>';
-		$content['detail'] .= '<div class="plugin-config-row"><label>Fanpage URL</label><input type="text" name="poc_foundation_fanpage_url" value="' . esc_attr( get_option( 'poc_foundation_fanpage_url' ) ) . '" /></div>';
-		$content['detail'] .= '<div class="plugin-config-row"><label>Fanpage ID</label><input type="text" name="poc_foundation_fanpage_id" value="' . esc_attr( get_option( 'poc_foundation_fanpage_id' ) ) . '" /></div>';
-		$content['detail'] .= '<div class="plugin-config-row"><label>Chatbot Backlink</label><input type="text" name="poc_foundation_chatbot_backlink" value="' . esc_attr( get_option( 'poc_foundation_chatbot_backlink' ) ) . '" /></div>';
+		$content['detail'] .= '<div class="plugin-config-row"><label>' . __( 'Default Discount', 'poc-foundation' ) . '</label><input type="text" name="poc_foundation_default_discount" value="' . esc_attr( get_option( 'poc_foundation_default_discount' ) ) . '" /></div>';
+		$content['detail'] .= '<div class="plugin-config-row"><label>' . __( 'Default Revenue Share', 'poc-foundation' ) . '</label><input type="text" name="poc_foundation_default_revenue_share" value="' . esc_attr( get_option( 'poc_foundation_default_revenue_share' ) ) . '" /></div>';
 		$content['detail'] .= '</form></div>';
 
 		return $content;

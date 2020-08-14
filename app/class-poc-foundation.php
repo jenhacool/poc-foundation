@@ -2,52 +2,16 @@
 
 namespace POC\Foundation;
 
+use POC\Foundation\License\POC_Foundation_License;
 use POC\Foundation\Utilities\SingletonTrait;
-use POC\Foundation\App\Admin\POC_Foundation_Background_Process;
+use POC\Foundation\Admin\POC_Foundation_Admin;
+use POC\Foundation\POC_Foundation_Post_Types;
 
 class POC_Foundation {
+
     use SingletonTrait;
 
-    public $callback;
-
-    public $admin;
-
-    public $ajax;
-
-    /**
-     * API Endpoint
-     *
-     * @var string
-     */
-    private static $api_endpoint = "https://api.poc.me/api";
-
-    /**
-     * Refund term
-     *
-     * @var int
-     */
-    private static $refund_term = 1;
-
-    /**
-     * Default revenue share
-     *
-     * @var int
-     */
-    private static $revenue_share = 60;
-
-    /**
-     * Default currency exchange
-     *
-     * @var float
-     */
-    private static $currency_exchange = 0.00004;
-
-    /**
-     * Default discount
-     *
-     * @var int
-     */
-    private static $default_discount = 10;
+    public $api;
 
     /**
      * POC_Foundation constructor.
@@ -57,46 +21,41 @@ class POC_Foundation {
         $this->init();
     }
 
+	/**
+	 * Init
+	 */
     public function init()
     {
-	    if ( ! $this->check_license() ) {
-	        $this->add_license_notice();
-		    return;
-	    }
-
 	    $this->init_classes();
 
 	    $this->add_hooks();
-
-//	    $response = wp_remote_post(
-//            'http://127.0.0.1:3000/elementor_activate',
-//            array(
-//                'headers' => array(
-//	                'Content-Type' => 'application/json; charset=utf-8'
-//                ),
-//                'body' => json_encode( array(
-//                    'foo' => 'bar'
-//                ) )
-//            )
-//        );
     }
 
-	protected function check_license()
-	{
-	    return true;
-        return ( new POC_Foundation_License() )->check_license();
-	}
-
-    protected function add_license_notice()
-    {
-
-    }
-
+	/**
+	 * Init need classes
+	 */
     protected function init_classes()
     {
-        $this->callback = new POC_Foundation_Callback();
-        $this->admin = new POC_Foundation_Admin();
-        $this->ajax = new POC_Foundation_AJAX();
+        if ( is_admin() ) {
+	        new POC_Foundation_Admin();
+        }
+
+        new POC_Foundation_Post_Types();
+
+        new POC_Foundation_AJAX();
+
+        $this->api = new POC_Foundation_API();
+
+		if ( $this->is_license_valid() ) {
+			new POC_Foundation_Affiliate();
+			new POC_Foundation_LGS();
+		}
+    }
+
+    protected function is_license_valid()
+    {
+    	return true;
+    	return ( new POC_Foundation_License() )->check_license();
     }
 
     /**
@@ -104,149 +63,9 @@ class POC_Foundation {
      */
     protected function add_hooks()
     {
-        add_action( 'wp_login', array( $this, 'add_ref_to_user' ) , 10, 2);
-
-        add_action( 'woocommerce_checkout_order_processed', array( $this, 'add_ref_to_order' ), 10, 3 );
-
-        add_action( 'woocommerce_order_status_completed', array( $this, 'after_order_completed' ) );
-
-        add_action( 'woocommerce_order_status_refunded', array( $this, 'after_order_refunded' ) );
-
         add_action( 'wp_enqueue_scripts', array( $this, 'add_scripts' ) );
 
-        add_filter( 'do_shortcode_tag', array( $this, 'add_purchase_conversion_setup' ), 999, 2 );
-
-        add_action( 'init', array( $this, 'handle_ajax_request' ) );
-
-        add_action( 'woocommerce_product_options_general_product_data', array( $this, 'add_custom_product_data_field' ) );
-
-        add_action( 'woocommerce_process_product_meta', array( $this, 'save_custom_product_data_field' ) );
-
-        add_filter( 'woocommerce_get_shop_coupon_data', array( $this, 'create_virtual_coupon' ), 10, 2  );
-
-        add_filter( 'woocommerce_coupon_get_discount_amount', array( $this, 'get_discount_amount' ), 10, 6 );
-
-        add_action( 'woocommerce_before_cart', array( $this, 'apply_coupon_by_ref_by' ) );
-
-        add_action( 'admin_init', array( $this, 'register_plugin_settings' ) );
-
-	    add_action( 'elementor_pro/init', array( $this, 'add_elementor_form_action' ) );
-
-	    add_action( 'elementor/dynamic_tags/register_tags', array( $this, 'register_dynamic_tags' ) );
-
-	    add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
-
-	    add_action( 'wp_async_admin_init', function() {
-	        sleep( 3 );
-	        error_log( 'abcdef' );
-        } );
-    }
-
-    /**
-     * Add ref to user after logged in
-     *
-     * @param $user_login
-     * @param $user
-     */
-    public function add_ref_to_user( $user_login, $user ) {
-        if ( ! empty( $_COOKIE['ref_by'] ) ) {
-            add_user_meta( $user->ID, 'ref_by', $_COOKIE['ref_by'], true );
-        }
-
-        if ( ! empty( $_COOKIE['ref_by_subid'] ) ) {
-            add_user_meta( $user->ID, 'ref_by_subid', $_COOKIE['ref_by_subid'], true );
-        }
-    }
-
-    /**
-     * Add ref to user after order created and meta data saved
-     *
-     * @param $object
-     * @param $data_store
-     */
-    public function add_ref_to_order( $order_id, $posted_data, $order ) {
-        if( ! empty( get_post_meta( $order_id, 'ref_by' ) ) ) {
-            return;
-        }
-
-        $ref_by = ! empty( $_COOKIE['ref_by'] ) ? $_COOKIE['ref_by'] : get_user_meta( get_current_user_id(), 'ref_by', true );
-
-        if( empty( $ref_by ) ) {
-            $coupon_codes = $order->get_coupon_codes();
-
-            if( empty( $coupon_codes ) ) {
-                return;
-            }
-
-            $coupon_code = $coupon_codes[0];
-
-            $this->write_log( "Coupon code: $coupon_code" );
-
-            if( ! $this->is_coupon_valid( $coupon_code ) ) {
-                return;
-            }
-
-            $ref_by = $coupon_code;
-        }
-
-        add_post_meta( $order_id, 'ref_by', $ref_by );
-
-        if( ! empty( get_post_meta( $order_id, 'ref_by_subid' ) ) ) {
-            return;
-        }
-
-        $ref_by_subid = ! empty( $_COOKIE['ref_by_subid'] ) ? $_COOKIE['ref_by_subid'] : get_user_meta( get_current_user_id(), 'ref_by_subid', true );
-
-        if( empty( $ref_by_subid ) ) {
-            return;
-        }
-
-        add_post_meta( $order_id, 'ref_by_subid', $ref_by_subid );
-    }
-
-    /**
-     * Handle completed order
-     *
-     * @param $order_id
-     */
-    public function after_order_completed( $order_id ) {
-        $poc_price = $this->get_poc_price();
-
-        $ref_by = get_post_meta( $order_id, 'ref_by', true );
-
-        $ref_by_subid = get_post_meta( $order_id, 'ref_by_subid', true );
-
-        if ( ! $ref_by ) $ref_by = 'null';
-
-        if ( $ref_by_subid ) $ref_by = $ref_by . '::' . urlencode( $ref_by_subid );
-
-        $order = wc_get_order( $order_id );
-
-        $username = $this->get_uid_prefix();
-
-        $amount = round( $this->get_revenue_share_total( $order ) * self::$currency_exchange / $poc_price, 6 );
-        $release = time() + self::$refund_term * 60;
-
-        $this->write_log("Added an affiliate TX:: username: ".$username." / ref_by: ".$ref_by." / uid: ".$this->get_uid_prefix()."-".$order_id." / amount: ".$amount." / release: ".$release);
-
-        $result = $this->send_request( "http://51.158.174.189:3002/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
-        if ($result != "Done")  $this->write_log("Error while adding an affiliate TX:: username: ".$username." / uid: ".$this->get_uid_prefix().$order_id." / amount: ".$amount." / release: ".$release);
-    }
-
-    /**
-     * Handle refunded order
-     *
-     * @param $order_id
-     */
-    public function after_order_refunded( $order_id )
-    {
-        $this->write_log("Revoked an affiliate TX:: ".$this->get_uid_prefix().$order_id);
-
-        $result = $this->send_request(self::$api_endpoint."/revoketransaction/uid/".$this->get_uid_prefix().$order_id."/");
-
-        if ($result != "Done") {
-            $this->write_log("Error while revoke a Tx:: uid: ".$this->get_uid_prefix().$order_id);
-        }
+        add_filter( 'wp_headers', array( $this, 'modify_wp_headers' ) );
     }
 
     /**
@@ -254,542 +73,32 @@ class POC_Foundation {
      */
     public function add_scripts()
     {
-        wp_enqueue_script( 'poc-foundation-script', plugin_dir_url( __FILE__ ) . 'assets/c.js', array( 'jquery' ) );
-    }
-
-    /**
-     * Purchase conversion tracking setup
-     *
-     * @param $output
-     * @param $tag
-     *
-     * @return string
-     */
-    public function add_purchase_conversion_setup( $output, $tag )
-    {
-        global $wp;
-
-        if ( $tag != 'woocommerce_checkout' ) {
-            return $output;
-        }
-
-        if( empty( $wp->query_vars['order-received'] ) ) {
-            return $output;
-        }
-
-        $order_id = $wp->query_vars['order-received'];
-
-        if( ! $order_id ) {
-            return $output;
-        }
-
-        $order = wc_get_order( $order_id );
-
-        if( ! $order ) {
-            return $output;
-        }
-
-        if( ! $order->has_status( 'completed' ) ) {
-            return $output;
-        }
-
-        $html = '
-        <script data-cfasync="false" data-pagespeed-no-defer type="text/javascript">//<![CDATA[
-          dataLayer.push({
-            "event": "paymentCompleted",
-            "ConversionID": "1022110835",
-            "ConversionLabel": "VcZ0CPGB2M0BEPPYsOcD",
-            "ConversionValue": "'.$order->get_total() * self::$currency_exchange.'",
-            "ConversionOrderID": "'.$this->get_uid_prefix()."-".$order_id.'",
-            "ConversionCurrency": "USD",
-            "eventCallback": function() {
-              // alert("tessssss")
-              window.location = "https://loc.com.vn/thanh-toan-thanh-cong/"
-            }
-          })
-        //]]></script>';
-
-        return $output . $html;
-    }
-
-    /**
-     * Handle ajax request
-     */
-    public function handle_ajax_request()
-    {
-        if ( ! empty( $_GET["poc_action"] ) && $_GET["poc_action"] == "getuid" ) {
-            echo md5(rand(0,999).microtime());
-            die();
-        }
-
-        if ( ! empty( $_GET["poc_crmuid_notify_url"] ) ) {
-            echo $this->send_get(
-                "https://crmuid.xyz/site/".$this->get_uid_prefix()."/url/".urlencode(base64_encode($_GET["poc_crmuid_notify_url"])),
-                ["crmuid: $_GET[crmuid]"]
-            );
-            die();
-        }
-    }
-
-    /**
-     * Add custom product data field
-     */
-    public function add_custom_product_data_field()
-    {
-        woocommerce_wp_text_input( array(
-            'id' => 'poc_foundation_discount',
-            'label' => __( 'POC Discount' ),
-        ) );
-
-        woocommerce_wp_text_input( array(
-            'id' => 'poc_foundation_revenue_share',
-            'label' => __( 'POC Revenue share' ),
-        ) );
-    }
-
-    /**
-     * Save custom product data field
-     *
-     * @param $post_id
-     */
-    public function save_custom_product_data_field( $post_id )
-    {
-        if( ! isset( $_POST['poc_foundation_discount'] ) && ! isset( $_POST['poc_foundation_revenue_share'] ) ) {
-            return;
-        }
-
-        $product = wc_get_product( $post_id );
-
-        if( ! $product ) {
-            return;
-        }
-
-        $discount = ( $_POST['poc_foundation_discount'] ) ? sanitize_text_field( $_POST['poc_foundation_discount'] ) : '';
-        $revenue_share = ( $_POST['poc_foundation_revenue_share'] ) ? sanitize_text_field( $_POST['poc_foundation_revenue_share'] ) : '';
-
-        $product->update_meta_data( 'poc_foundation_discount', $discount );
-        $product->update_meta_data( 'poc_foundation_revenue_share', $revenue_share );
-
-        $product->save();
-    }
-
-    /**
-     * Create virtual coupon
-     *
-     * @param $false
-     * @param $data
-     *
-     * @return array|null
-     */
-    public function create_virtual_coupon( $false, $data )
-    {
-        if ( is_admin() ) {
-            return $false;
-        }
-
-        $coupon_settings = null;
-
-        if ( ! $this->is_coupon_valid( $data ) ) {
-            return $false;
-        }
-
-        $coupon_settings = array(
-            'discount_type' => 'percent',
-            'amount' => self::$default_discount,
-            'individual_use' => true,
-        );
-
-        return $coupon_settings;
-    }
-
-    /**
-     * Custom discount amount base on product
-     *
-     * @param $round
-     * @param $discounting_amount
-     * @param $cart_item
-     * @param $single
-     * @param $coupon
-     *
-     * @return false|float
-     */
-    public function get_discount_amount( $round, $discounting_amount, $cart_item, $single, $coupon )
-    {
-        $product = wc_get_product( $cart_item['product_id'] );
-
-        if( ! $product ) {
-            return $round;
-        }
-
-        $custom_discount = $product->get_meta( 'poc_foundation_discount' );
-
-        if( empty( $custom_discount ) ) {
-            return $round;
-        }
-
-        $discount = (float) $cart_item['line_subtotal'] * ( (int) $custom_discount / 100 );
-
-        $round = round( $discount, wc_get_rounding_precision() );
-
-        return $round;
-    }
-
-    /**
-     * Auto apply coupon if COOKIE has ref_by value
-     */
-    public function apply_coupon_by_ref_by()
-    {
-        $ref_by = ! empty( $_COOKIE['ref_by'] ) ? $_COOKIE['ref_by'] : get_user_meta( get_current_user_id(), 'ref_by', true );
-
-        if( empty( $ref_by ) ) {
-            return;
-        }
-
-        $cart = WC()->cart;
-
-        $applied_coupons = $cart->get_applied_coupons();
-
-        // Check if cart has coupon or not
-        if( in_array( $ref_by, $applied_coupons ) ) {
-            return;
-        }
-
-        // Check if coupon is valid or not
-        if( ! $this->is_coupon_valid( $ref_by ) ) {
-            return;
-        }
-
-        // If valid, apply it
-        $cart->add_discount( $ref_by );
-
-        wc_print_notices();
-    }
-
-    /**
-     * Plugin options page HTML
-     */
-    public function options_page_html()
-    {
-        if ( ! current_user_can( 'manage_options' ) ) {
-            return;
-        }
-
-        if ( isset( $_GET['settings-updated'] ) ) {
-            add_settings_error( 'poc_foundation_messages', 'poc_foundation_message', __( 'Settings Saved', 'poc_foundation' ), 'updated' );
-        }
-
-        settings_errors( 'poc_foundation_messages' );
-
-        ?>
-        <div class="wrap">
-            <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
-            <form action="options.php" method="post">
-                <?php settings_fields( 'poc_foundation_option_group' ); ?>
-                <?php do_settings_sections( 'poc_foundation_option_group' ); ?>
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row">API Key</th>
-                        <td><input type="text" name="poc_foundation_api_key" value="<?php echo esc_attr( get_option( 'poc_foundation_api_key' ) ); ?>" /></td>
-                    </tr>
-
-                    <tr valign="top">
-                        <th scope="row">UID Prefix</th>
-                        <td><input type="text" name="poc_foundation_uid_prefix" value="<?php echo esc_attr( get_option( 'poc_foundation_uid_prefix' ) ); ?>" /></td>
-                    </tr>
-
-                    <tr valign="top">
-                        <th scope="row">Redirect Page</th>
-                        <td>
-                            <select name="poc_foundation_redirect_page" id="">
-                                <?php foreach ( get_pages() as $page ) : ?>
-                                    <option value="<?php echo $page->ID; ?>" <?php echo ( get_option( 'poc_foundation_redirect_page' ) == $page->ID ) ? 'selected' : ''; ?>><?php echo $page->post_title; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </td>
-                    </tr>
-
-                    <tr valign="top">
-                        <th scope="row">Fanpage URL</th>
-                        <td><input type="text" name="poc_foundation_fanpage_url" value="<?php echo esc_attr( get_option( 'poc_foundation_fanpage_url' ) ); ?>" /></td>
-                    </tr>
-
-                    <tr valign="top">
-                        <th scope="row">Fanpage ID</th>
-                        <td><input type="text" name="poc_foundation_fanpage_id" value="<?php echo esc_attr( get_option( 'poc_foundation_fanpage_id' ) ); ?>" /></td>
-                    </tr>
-
-                    <tr valign="top">
-                        <th scope="row">Chatbot Backlink</th>
-                        <td><input type="text" name="poc_foundation_chatbot_backlink" value="<?php echo esc_attr( get_option( 'poc_foundation_chatbot_backlink' ) ); ?>"></td>
-                    </tr>
-                </table>
-                <?php submit_button( 'Save Settings' ); ?>
-            </form>
-        </div>
-        <?php
-    }
-
-    /**
-     * Plugin settings init
-     */
-    public function register_plugin_settings()
-    {
-        register_setting( 'poc_foundation_option_group', 'poc_foundation_api_key' );
-        register_setting( 'poc_foundation_option_group', 'poc_foundation_uid_prefix' );
-        register_setting( 'poc_foundation_option_group', 'poc_foundation_redirect_page' );
-        register_setting( 'poc_foundation_option_group', 'poc_foundation_fanpage_id' );
-	    register_setting( 'poc_foundation_option_group', 'poc_foundation_fanpage_url' );
-	    register_setting( 'poc_foundation_option_group', 'poc_foundation_chatbot_backlink' );
+        wp_enqueue_script( 'poc-foundation-script', POC_FOUNDATION_PLUGIN_URL . 'assets/js/c.js', array( 'jquery' ) );
     }
 
 	/**
-	 * Add custom Elementor action
+	 * Modify header to allow iFrame from other domain
+	 *
+	 * @param $headers
+	 *
+	 * @return mixed
 	 */
-    public function add_elementor_form_action()
+    public function modify_wp_headers( $headers )
     {
-        include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/modules/forms/actions/poc.php' );
+    	$allowed_iframe_domain = get_option( 'poc_foundation_allowed_iframe_domain', '' );
 
-        $poc_affiliate_notifier = new \POC_Affiliate_Notifier( array(
-	        'api_endpoint' => self::$api_endpoint,
-	        'api_key' => $this->get_api_key(),
-	        'domain' => $this->get_uid_prefix()
-        ) );
-
-        \ElementorPro\Plugin::instance()->modules_manager->get_modules( 'forms' )->add_form_action( $poc_affiliate_notifier->get_name(), $poc_affiliate_notifier );
-    }
-
-    public function register_dynamic_tags( $dynamic_tags )
-    {
-        \Elementor\Plugin::$instance->dynamic_tags->register_group( 'poc-foundation-dynamic-tags', [
-            'title' => 'POC Foundation'
-        ] );
-
-        include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/facebook-url-tag.php' );
-        include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/facebook-id-tag.php' );
-	    include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/poc-ref-by-tag.php' );
-	    include_once( POC_FOUNDATION_PLUGIN_DIR . 'elementor/core/dynamic-tags/poc-subid-tag.php' );
-
-        $dynamic_tags->register_tag( 'Facebook_URL_Tag' );
-        $dynamic_tags->register_tag( 'Facebook_ID_Tag' );
-	    $dynamic_tags->register_tag( 'POC_Ref_By_Tag' );
-	    $dynamic_tags->register_tag( 'POC_SubID_Tag' );
-    }
-
-    public function register_rest_routes()
-    {
-	    register_rest_route(
-		    'poc-foundation/v1',
-		    '/get_fanpage',
-		    array(
-			    'methods' => 'POST',
-			    'callback' => array( $this, 'get_fanpage' )
-		    )
-	    );
-    }
-
-    public function get_fanpage( $request ) {
-	    $params = $request->get_json_params();
-
-	    $ref_by = $params['ref_by'];
-
-	    $response = wp_remote_get( get_option( 'poc_foundation_api_endpoint' ) . '/website/get_fanpage/' . $ref_by, array(
-		    'headers' => array(
-			    'Content-Type' => 'application/json',
-			    'api-key' => get_option( 'poc_foundation_api_key' )
-		    ),
-	    ) );
-
-	    if ( is_wp_error( $response ) ) {
-		    return $this->rest_response( array(
-			    'link' => ''
-		    ) );
+    	if ( ! $allowed_iframe_domain || empty( $allowed_iframe_domain ) ) {
+    		return $headers;
 	    }
 
-	    $fanpage_data = json_decode( wp_remote_retrieve_body( $response ), true );
+	    $headers['X-Frame-Options'] = "ALLOW-FROM $allowed_iframe_domain";
 
-	    if ( empty( $fanpage_data ) || ! isset( $fanpage_data['data'] ) || ! isset( $fanpage_data['data']['fanpage_url'] ) || ! isset( $fanpage_data['data']['fanpage_id'] ) ) {
-		    return $this->rest_response( array(
-			    'link' => ''
-		    ) );
-	    }
-
-	    return $this->rest_response( array(
-            'link' => 'https://www.messenger.com/t/' . $fanpage_data['fanpage_id']
-        ) );
-    }
-
-    protected function rest_response( $data )
-    {
-	    $response = new \WP_REST_Response( $data );
-
-	    $response->set_status( 200 );
-
-	    return $response;
-    }
-
-    /**
-     * Get POC Price
-     *
-     * @return bool|string
-     */
-    protected function get_poc_price()
-    {
-        $price = $this->send_request( self::$api_endpoint . '/getprice/poc' );
-        if (is_numeric($price) && $price > 0) {
-            return $price;
-        } else {
-            // Try again after 1s
-            sleep(1);
-            $price = $this->send_request( self::$api_endpoint . '/getprice/poc' );
-            if (is_numeric($price) && $price > 0) {
-                return $price;
-            } else {
-                // Try again after 1s
-                sleep(1);
-                $price = $this->send_request( self::$api_endpoint . '/getprice/poc' );
-                if (is_numeric($price) && $price > 0) {
-                    return $price;
-                } else {
-                    // Try again after 1s
-                    sleep(1);
-                    return false;
-                }
-            }
-        }
-    }
-
-    /**
-     * Send API Request
-     *
-     * @param $url
-     *
-     * @return bool|string
-     */
-    protected function send_request( $url ) {
-        $headers = [
-            'api-key: ' . $this->get_api_key(),
-        ];
-
-        return $this->send_get( $url, $headers );
-    }
-
-    /**
-     * Send API GET Request
-     *
-     * @param $url
-     * @param $headers
-     *
-     * @return bool|string
-     */
-    protected function send_get($url, $headers) {
-        $ch = curl_init();
-
-        curl_setopt($ch, CURLOPT_URL,$url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-
-        $result = curl_exec ($ch);
-
-        curl_close ($ch);
-
-        return $result;
-    }
-
-    /**
-     * Write log
-     *
-     * @param $log
-     */
-    protected function write_log( $log )
-    {
-        if ( is_array( $log ) || is_object( $log ) ) {
-            error_log( print_r( $log, true ) );
-        } else {
-            error_log( $log );
-        }
-    }
-
-    /**
-     * Calculate revenue share total
-     *
-     * @param $order
-     *
-     * @return float|int
-     */
-    protected function get_revenue_share_total( $order )
-    {
-        $revenue_share_total = 0;
-
-        foreach ( $order->get_items() as $item ) {
-            $revenue_share_percent = (int) $item->get_product()->get_meta( 'poc_foundation_revenue_share' );
-
-            if( empty( $revenue_share_percent ) ) {
-                $revenue_share_percent = (int) self::$revenue_share;
-            }
-
-            $revenue_share = ( (int) $item->get_total() ) * ( $revenue_share_percent / 100 );
-
-            $revenue_share_total += $revenue_share;
-        }
-
-        return $revenue_share_total;
-    }
-
-    /**
-     * Check if coupon is valid or not
-     *
-     * @param $coupon_code
-     *
-     * @return boolean
-     */
-    protected function is_coupon_valid( $coupon_code )
-    {
-        $coupon_code = strtolower( $coupon_code );
-
-        $response = wp_remote_get( self::$api_endpoint . '/user/' . $coupon_code );
-
-        if( is_wp_error( $response ) ) {
-            return false;
-        }
-
-        $body = wp_remote_retrieve_body( $response );
-
-        $data = json_decode( $body, true );
-
-        if( is_null( $data ) || $data['message'] != 'success' || empty( $data['data'] ) ) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Get API Key
-     *
-     * @return mixed|void
-     */
-    protected function get_api_key()
-    {
-        return get_option( 'poc_foundation_api_key' );
-    }
-
-    /**
-     * Get UID Prefix
-     *
-     * @return mixed|void
-     */
-    protected function get_uid_prefix()
-    {
-        return get_option( 'poc_foundation_uid_prefix' );
+    	return $headers;
     }
 
     public static function activate()
     {
-
+        set_transient( 'poc_foundation_activation_redirect', 1, 30 );
     }
 
     public static function deactivate()

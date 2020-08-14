@@ -1,6 +1,6 @@
 <?php
 
-namespace POC\Foundation;
+namespace POC\Foundation\License;
 
 class POC_Foundation_License_Server
 {
@@ -21,7 +21,7 @@ class POC_Foundation_License_Server
 		$dirpath = dirname(__FILE__);
 		$verifyfilepath = 'modules/servers/licensing/verify.php';
 		$localkeyvalid = false;
-		if ($localkey) {
+		if (!empty($localkey)) {
 			$localkey = str_replace("\n", '', $localkey); # Remove the line breaks
 			$localdata = substr($localkey, 0, strlen($localkey) - 32); # Extract License Data
 			$md5hash = substr($localkey, strlen($localkey) - 32); # Extract MD5 Hash
@@ -156,12 +156,12 @@ class POC_Foundation_License_Server
 
 	protected function get_whmcs_url()
 	{
-		return 'https://mc.pocvietnam.com';
+		return 'https://mc.pocvietnam.com/';
 	}
 
 	protected function get_licensing_secret_key()
 	{
-		return 'abc123';
+		return 'DFVNPOC4WIN';
 	}
 
 	protected function get_local_key_days()

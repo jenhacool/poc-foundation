@@ -1,17 +1,10 @@
 <?php
-/**
- * Class pocAffiliateNotify
- * Customization Form Registration for Poc Affiliate
- * Sendy Registration via API
- */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit; // Exit if accessed directly
-}
+namespace POC\Foundation\Admin\ElementorPro\Form_Actions;
 
 use POC\Foundation\POC_Foundation_API;
 
-class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_Base
+class POC_Foundation_Elementor_Pro_Form_Action extends \ElementorPro\Modules\Forms\Classes\Action_Base
 {
 	public $api;
 
@@ -73,6 +66,8 @@ class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_
 	}
 
 	public function run( $record, $ajax_handler ) {
+		$this->save_to_db( $record );
+
 		$raw_fields = $record->get( 'fields' );
 
 		$fields = [];
@@ -155,21 +150,45 @@ class POC_Affiliate_Notifier extends \ElementorPro\Modules\Forms\Classes\Action_
 		return;
 	}
 
-	protected function get_campaign_data_by_key( $key )
+	protected function save_to_db( $record )
 	{
-		$campaigns = unserialize( get_option( 'poc_foundation_campaign', array() ) );
+		$fields = $record->get( 'fields' );
 
-		if ( empty( $campaigns ) ) {
-			return null;
+		if ( ! $fields ) {
+			return;
 		}
 
-		$index = array_search( $key, array_column( $campaigns, 'campaign_key' ) );
+		$data  = array();
 
-		if ( $index == false ) {
-			return null;
+		$email = false;
+
+		foreach ( $fields as $key => $value ) {
+			$data[$key] = sanitize_text_field( $value['raw_value'] );
 		}
 
-		return $campaigns[$index];
+		$current_page = get_post( $_POST['post_id'] );
+
+		$data = array_merge( $data, array(
+			'submitted_on' => $current_page->post_title,
+			'submitted_on_id' => $current_page->ID,
+			'campaign_name' => 'Campaign Name'
+		) );
+
+		$db_ins = array(
+			'post_title'  => $record->get_form_settings( 'form_name' ) . ' - ' . date( 'Y-m-d H:i:s' ),
+			'post_status' => 'publish',
+			'post_type'   => 'poc_foundation_lead',
+		);
+
+		$post_id = wp_insert_post( $db_ins );
+
+		if ( ! $post_id ) {
+			return;
+		}
+
+		update_post_meta( $post_id, 'poc_foundation_lead_data', $data );
+		update_post_meta( $post_id, 'poc_foundation_lead_email', $email );
+		update_post_meta( $post_id, 'poc_foundation_lead_form_id', $record->get_form_settings( 'form_name' ) );
 	}
 
 	protected function add_error_message( $ajax_handler, $message = '' )

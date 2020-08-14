@@ -7,7 +7,15 @@
         visibility: visible;
       }
 
+      .summary {
+        min-width: 255px;
+        max-width: 520px;
+      }
+
       .detail {
+        min-width: 255px;
+        max-width: 520px;
+
         ul {
           margin: 1em 0;
         }
@@ -38,12 +46,28 @@
           margin-bottom: 1em;
 
           label {
-            flex: 0 0 140px;
-            max-width: 140px;
+            flex: 0 0 160px;
+            max-width: 160px;
           }
 
           input, select {
             flex-grow: 1;
+          }
+        }
+      }
+
+      &.step-campaign {
+        .detail {
+          min-width: unset;
+          max-width: unset;
+          margin-bottom: 1em;
+
+          table {
+            tfoot {
+              button.save {
+                display: none;
+              }
+            }
           }
         }
       }

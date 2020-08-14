@@ -4,6 +4,14 @@
 #poc-foundation-wizard .wizard-steps .step.active-step {
   visibility: visible;
 }
+#poc-foundation-wizard .wizard-steps .step .summary {
+  min-width: 255px;
+  max-width: 520px;
+}
+#poc-foundation-wizard .wizard-steps .step .detail {
+  min-width: 255px;
+  max-width: 520px;
+}
 #poc-foundation-wizard .wizard-steps .step .detail ul {
   margin: 1em 0;
 }
@@ -25,11 +33,19 @@
   margin-bottom: 1em;
 }
 #poc-foundation-wizard .wizard-steps .step .plugin-config .plugin-config-row label {
-  flex: 0 0 140px;
-  max-width: 140px;
+  flex: 0 0 160px;
+  max-width: 160px;
 }
 #poc-foundation-wizard .wizard-steps .step .plugin-config .plugin-config-row input, #poc-foundation-wizard .wizard-steps .step .plugin-config .plugin-config-row select {
   flex-grow: 1;
+}
+#poc-foundation-wizard .wizard-steps .step.step-campaign .detail {
+  min-width: unset;
+  max-width: unset;
+  margin-bottom: 1em;
+}
+#poc-foundation-wizard .wizard-steps .step.step-campaign .detail table tfoot button.save {
+  display: none;
 }
 #poc-foundation-wizard .wizard-nav {
   list-style: none;

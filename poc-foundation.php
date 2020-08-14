@@ -34,7 +34,14 @@ register_activation_hook( POC_FOUNDATION_PLUGIN_FILE, array( POC_Foundation::cla
 // Register deactivation hook
 register_deactivation_hook( POC_FOUNDATION_PLUGIN_FILE, array( POC_Foundation::class, 'deactivate' ) );
 
+/**
+ * Get POC_Foundation instance
+ *
+ * @return POC_Foundation
+ */
+function poc_foundation() {
+	return POC_Foundation::instance();
+}
+
 // Run plugin
-add_action( 'plugins_loaded', function() {
-	POC_Foundation::instance();
-} );
+add_action( 'plugins_loaded', 'poc_foundation' );

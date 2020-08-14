@@ -16,18 +16,18 @@ class POC_Foundation_Plugin_Manager
 	public function get_required_plugins()
 	{
 		return array(
-//			'woocommerce' => array(
-//				'main_file_path' => 'woocommerce/woocommerce.php',
-//				'name' => 'Woocommerce',
-//				'slug' => 'woocommerce',
-//				'download_link' => 'https://downloads.wordpress.org/plugin/woocommerce.4.3.0.zip'
-//			),
-//			'elementor' => array(
-//				'main_file_path' => 'elementor/elementor.php',
-//				'name' => 'Elementor',
-//				'slug' => 'elementor',
-//				'download_link' => 'https://downloads.wordpress.org/plugin/elementor.2.9.7.zip'
-//			),
+			'woocommerce' => array(
+				'main_file_path' => 'woocommerce/woocommerce.php',
+				'name' => 'Woocommerce',
+				'slug' => 'woocommerce',
+				'download_link' => 'https://downloads.wordpress.org/plugin/woocommerce.4.3.0.zip'
+			),
+			'elementor' => array(
+				'main_file_path' => 'elementor/elementor.php',
+				'name' => 'Elementor',
+				'slug' => 'elementor',
+				'download_link' => 'https://downloads.wordpress.org/plugin/elementor.2.9.7.zip'
+			),
 			'elementor-pro' => array(
 				'main_file_path' => 'elementor-pro/elementor-pro.php',
 				'name' => 'Elementor Pro',
@@ -142,6 +142,11 @@ class POC_Foundation_Plugin_Manager
 		return false;
 	}
 
+	public function get_elementor_pro_handler()
+	{
+		return new POC_Foundation_Elementor_Pro( $this );
+	}
+
 	protected function setup_plugin_elementor_pro()
 	{
 		return $this->elementor_pro->setup();
@@ -162,6 +167,6 @@ class POC_Foundation_Plugin_Manager
 		include_once ABSPATH . 'wp-admin/includes/class-wp-ajax-upgrader-skin.php';
 		include_once ABSPATH . 'wp-admin/includes/class-plugin-upgrader.php';
 
-		return new \Plugin_Upgrader();
+		return new \Plugin_Upgrader( new \WP_Ajax_Upgrader_Skin() );
 	}
 }

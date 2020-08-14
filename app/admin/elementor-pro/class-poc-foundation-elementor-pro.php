@@ -22,106 +22,124 @@ class POC_Foundation_Elementor_Pro
 		$this->plugin_manager = $plugin_manager;
 	}
 
+	/**
+	 * Setup Elementor Pro
+	 *
+	 * @return bool
+	 */
 	public function setup()
 	{
 		if ( ! $this->plugin_manager->is_plugin_installed( 'elementor-pro' ) ) {
-			$waiting = $this->waiting_get_download_link();
+			$install = $this->install();
 
-			if ( $waiting ) {
-				return 'processing';
+			if ( ! $install ) {
+				return false;
 			}
-
-			return false;
 		}
 
 		$this->includes();
 
 		if ( $this->plugin_manager->is_plugin_updateable( 'elementor-pro' ) ) {
-			$update = $this->update();
+			$update = $this->plugin_manager->upgrade_plugin( 'elementor-pro' );
 
 			if ( ! $update ) {
 				return false;
 			}
 		}
 
-		if ( ! $this->is_license_valid() ) {
-			$waiting = $this->waiting_get_activate_license_params();
+		if ( ! $this->plugin_manager->is_plugin_active( 'elementor-pro' ) ) {
+			$activate = $this->plugin_manager->activate_plugin( 'elementor-pro' );
 
-			if ( $waiting ) {
-				return 'processing';
+			if ( ! is_null( $activate ) ) {
+				return false;
 			}
+		}
 
-			return false;
+		if ( ! $this->is_license_valid() ) {
+			$activate_license = $this->activate_license();
+
+			if ( ! $activate_license ) {
+				return false;
+			}
 		}
 
 		return true;
 	}
 
-	public function waiting_get_download_link()
+	/**
+	 * Install plugin
+	 *
+	 * @return array|bool|\WP_Error
+	 */
+	public function install()
 	{
-		$response = $this->call_api( 'get_download_link', array(
-			'callback' => $this->get_install_callback()
-		) );
-
-		if ( is_null( $response ) ) {
-			return false;
-		}
-
-		if ( isset( $response['status'] ) && $response['status'] === 'processing' ) {
-			return true;
-		}
-
-		return false;
-	}
-
-	public function install( $download_link )
-	{
-		return $this->plugin_manager->get_plugin_upgrader()->install( $download_link );
-	}
-
-	public function update()
-	{
-
-	}
-
-	public function waiting_get_activate_license_params()
-	{
-		$remote_authorize_url = $this->get_remote_authorize_url();
-
-		if ( empty( $remote_authorize_url ) ) {
-			return false;
-		}
-
-		$response = $this->call_api(
-			'activate_elementor_pro',
-			array(
-				'url' => $remote_authorize_url,
-				'callback' => $this->get_activate_license_callback()
-			)
+		return $this->plugin_manager->get_plugin_upgrader()->install(
+			$this->get_download_link()
 		);
+	}
+
+	/**
+	 * Get plugin download link
+	 *
+	 * @return mixed|string
+	 */
+	public function get_download_link()
+	{
+		$response = $this->call_api( 'get_download_link' );
 
 		if ( is_null( $response ) ) {
-			return false;
+			return '';
 		}
 
-		if ( ! isset( $response['status'] ) || $response['status'] != 'processing' ) {
-			return false;
-		}
-
-		return true;
+		return $response['download_link'];
 	}
 
-	public function activate_license( $params )
+	/**
+	 * Activate plugin license
+	 *
+	 * @return bool
+	 */
+	public function activate_license()
 	{
-		$activate = $this->get_elementor_pro_app()->activate( $params );
+		$license_key = $this->get_license_key();
 
-		if ( ! $activate ) {
+		if ( empty( $license_key ) ) {
 			return false;
 		}
+
+		$data = \ElementorPro\License\API::activate_license( $license_key );
+
+		if ( is_wp_error( $data ) ) {
+			return false;
+		}
+
+		\ElementorPro\License\Admin::set_license_key( $license_key );
+		\ElementorPro\License\API::set_license_data( $data );
 
 		return true;
 	}
 
+	/**
+	 * Get license key
+	 *
+	 * @return mixed|string
+	 */
+	public function get_license_key()
+	{
+		$response = $this->call_api( 'get_license_key' );
+
+		if ( is_null( $response ) ) {
+			return '';
+		}
+
+		return $response['license_key'];
+	}
+
+	/**
+	 * Check if current Elementor Pro plugin is valid or not
+	 *
+	 * @return bool
+	 */
 	public function is_license_valid()
 	{
 		$license_key = trim( get_option( 'elementor_pro_license_key' ) );
@@ -143,28 +161,9 @@ class POC_Foundation_Elementor_Pro
 		return true;
 	}
 
-	protected function get_install_callback()
-	{
-		return $this->get_callback_url( 'install' );
-	}
-
-	protected function get_activate_license_callback()
-	{
-		return $this->get_callback_url( 'activate' );
-	}
-
-	protected function get_callback_url( $action )
-	{
-		$url = home_url() . '?page=poc-foundation&action=' . $action . '_elementor_pro';
-
-		return add_query_arg( 'state', $this->get_request_state(), $url );
-	}
-
-	protected function get_remote_authorize_url()
-	{
-		return $this->get_elementor_pro_app()->get_remote_authorize_url();
-	}
-
+	/**
+	 * Includes some Elementor Pro files
+	 */
 	protected function includes()
 	{
 		include_once dirname( plugin_dir_path( POC_FOUNDATION_PLUGIN_FILE ) ) . '/elementor/core/common/modules/connect/apps/base-app.php';
@@ -175,6 +174,11 @@ class POC_Foundation_Elementor_Pro
 		include_once dirname( plugin_dir_path( POC_FOUNDATION_PLUGIN_FILE ) ) . '/elementor-pro/license/api.php';
 	}
 
+	/**
+	 * Get license data
+	 *
+	 * @return array|bool|mixed|\stdClass|\WP_Error
+	 */
 	protected function get_license_data()
 	{
 		if ( ! class_exists( \ElementorPro\License\API::class ) ) {
@@ -193,16 +197,14 @@ class POC_Foundation_Elementor_Pro
 		return \ElementorPro\License\API::is_license_active();
 	}
 
-	protected function get_elementor_pro_activate_app()
-	{
-		return new \ElementorPro\Core\Connect\Apps\Activate();
-	}
-
-	protected function get_elementor_pro_app()
-	{
-		return new POC_Foundation_Elementor_Pro_App();
-	}
-
+	/**
+	 * Send API request
+	 *
+	 * @param $path
+	 * @param array $data
+	 *
+	 * @return mixed|null
+	 */
 	protected function call_api( $path, $data = [] )
 	{
 		$url = rtrim( self::API_ENDPOINT, '/' ) . '/' . $path;
@@ -216,9 +218,16 @@ class POC_Foundation_Elementor_Pro
 		) ) );
 	}
 
+	/**
+	 * Parse API response
+	 *
+	 * @param $response
+	 *
+	 * @return mixed|null
+	 */
 	protected function parse_response( $response )
 	{
-		if( is_wp_error( $response ) ) {
+		if ( is_wp_error( $response ) ) {
 			return null;
 		}
 
@@ -229,17 +238,5 @@ class POC_Foundation_Elementor_Pro
 		}
 
 		return $response;
-	}
-
-	protected function get_request_state()
-	{
-		$state = get_transient( 'poc-foundation-state' );
-
-		if ( ! $state ) {
-			$state = wp_generate_password( 12, false );
-			set_transient( 'poc-foundation-state', $state );
-		}
-
-		return $state;
 	}
 }

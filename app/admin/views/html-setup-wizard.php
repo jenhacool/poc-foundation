@@ -34,14 +34,14 @@
 			</li>
 		<?php endforeach; ?>
 	</ul>
-	<ul class="wizard-nav">
-		<?php foreach( $steps as $step ) : ?>
-			<?php if ( isset( $step['icon'] ) && $step['icon'] ) : ?>
-				<li class="<?php echo 'nav-step-' . esc_attr( $step['id'] ); ?>">
-					<span class="<?php echo 'dashicons dashicons-' . esc_attr( $step['icon'] ); ?>"></span>
-				</li>
-			<?php endif; ?>
-		<?php endforeach; ?>
-	</ul>
+<!--	<ul class="wizard-nav">-->
+<!--		--><?php //foreach( $steps as $step ) : ?>
+<!--			--><?php //if ( isset( $step['icon'] ) && $step['icon'] ) : ?>
+<!--				<li class="--><?php //echo 'nav-step-' . esc_attr( $step['id'] ); ?><!--">-->
+<!--					<span class="--><?php //echo 'dashicons dashicons-' . esc_attr( $step['icon'] ); ?><!--"></span>-->
+<!--				</li>-->
+<!--			--><?php //endif; ?>
+<!--		--><?php //endforeach; ?>
+<!--	</ul>-->
 	<div class="step-loading"><span class="spinner"></span></div>
 </div>
