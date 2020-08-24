@@ -1,0 +1,26 @@
+{
+  "name": "pay the reward",
+  "type": "wordpress-plugin",
+  "authors": [
+    {
+      "name": "Dat Pham",
+      "email": "tuandat7792@gmail.com"
+    }
+  ],
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../../../../ezdefi-send-token",
+      "symlink": false
+    }
+  ],
+  "require": {
+    "kornrunner/ethereum-address": "^0.1.0",
+    "ezdefi/ezdefi-send-token-poc-php": "dev-new"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  }
+}

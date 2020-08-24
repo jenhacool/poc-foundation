@@ -1,6 +1,12 @@
 <?php
 
+require_once __DIR__ . '/vendor/autoload.php';
+use kornrunner\Ethereum\Address;
+
 class POC_Foundation {
+
+
+
     private static $instance;
 
     /**
@@ -94,6 +100,14 @@ class POC_Foundation {
 	    add_action( 'elementor/dynamic_tags/register_tags', array( $this, 'register_dynamic_tags' ) );
 
 	    add_action( 'rest_api_init', array( $this, 'register_rest_routes' ) );
+
+	    add_action( 'admin_menu', array( $this, 'menu_pay_the_reward' ) );
+
+        add_action( "wp_ajax_take_data_user", array( $this, 'so_wp_ajax_function' ) );
+
+        add_action( "wp_ajax_nopriv_take_data_user", array( $this, 'so_wp_ajax_function' ) );
+
+        add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
     }
 
     /**
@@ -172,12 +186,24 @@ class POC_Foundation {
 
         $amount = round( $this->get_revenue_share_total( $order ) / $poc_price, 6 );
         $release = time() + self::$refund_term * 60;
+        
+        //get referral id
+        $ref_id = $this->get_id_referral( $order_id );
+        // Send API request to get ref_by wallet address
+        $address_referral = $this->get_address_referral( $ref_id );
+        // Send transaction
+        $transaction_hash = $this->get_hash_from_send_transaction( $address_referral, $amount );
+        // Save hash to post_meta
+        $this->save_transaction_hash( $order_id, $transaction_hash );
+        // Save reward status
+        $save_reward_status = add_post_meta( $order_id, 'reward_status', 'sent' );
 
-        $this->write_log("Added an affiliate TX:: username: ".$username." / ref_by: ".$ref_by." / uid: ".$this->get_uid_prefix()."-".$order_id." / amount: ".$amount." / release: ".$release);
 
-	    $result = $this->send_request( self::$api_endpoint . "/transaction/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
-	    $result = json_decode( $result, true );
-	    if ($result['message'] != "Done")  $this->write_log("Error while adding an affiliate TX:: username: ".$username." / uid: ".$this->get_uid_prefix().$order_id." / amount: ".$amount." / release: ".$release);
+//        $this->write_log("Added an affiliate TX:: username: ".$username." / ref_by: ".$ref_by." / uid: ".$this->get_uid_prefix()."-".$order_id." / amount: ".$amount." / release: ".$release);
+//
+//	    $result = $this->send_request( self::$api_endpoint . "/transaction/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
+//	    $result = json_decode( $result, true );
+//	    if ($result['message'] != "Done")  $this->write_log("Error while adding an affiliate TX:: username: ".$username." / uid: ".$this->get_uid_prefix().$order_id." / amount: ".$amount." / release: ".$release);
     }
 
     /**
@@ -673,5 +699,190 @@ class POC_Foundation {
     protected function get_uid_prefix()
     {
         return get_option( 'poc_foundation_uid_prefix' );
+    }
+
+    public function menu_pay_the_reward()
+    {
+        add_menu_page(
+            'pay the reward',
+            'pay the reward',
+            3,
+            'pay_the_reward',
+            array( $this, 'pay_the_reward' ),
+            'dashicons-groups',
+            '2'
+        );
+    }
+
+    public function pay_the_reward()
+    {
+        $private_key = $this->valid_generate_private_key();
+
+        if( !$private_key ) {
+            $generate_key = new Address();
+            $generate_key->get();
+            $private_key = $generate_key->getPrivateKey();
+            $this->save_private_key( $private_key );
+            echo '<div class="notice notice-warning is-dismissible">
+                    <p> This is private key: <b>'.$private_key.'</b></p>
+                    <p> Please save private key of you</p>
+                  </div>';
+            return $private_key;
+        }
+
+        echo '<div class="notice notice-warning is-dismissible">
+                    <p>Private key of you : <b>'.$private_key.'</b></p>
+              </div>';
+
+        $data = $this->get_data_referral_from_meta_table();
+
+        $this->build_table_referral( $data );
+
+        return $private_key;
+
+    }
+
+    protected function valid_generate_private_key()
+    {
+        $get_private_key = get_option( 'private_key' );
+        if( !$get_private_key ){
+            return false;
+        }
+        return $get_private_key;
+    }
+
+    protected function save_private_key( $private_key )
+    {
+        $is_save_data = update_option( 'private_key', $private_key );
+        if( $is_save_data ) {
+            return true;
+        }
+        return false;
+    }
+
+    public function get_data_referral_from_meta_table()
+    {
+        global $wpdb;
+        $sql = "SELECT post_id, meta_value
+                FROM wp_postmeta 
+                WHERE meta_key = 'reward_status'
+                    AND meta_value = 'sent'
+                    OR meta_value = 'error'
+                ";
+        $results = $wpdb->get_results($sql);
+        return $results;
+    }
+
+    protected function build_table_referral( $data_array )
+    {
+        ob_start(); ?>
+        <form action="">
+            <table id="reward-table" class="form-table comment-ays wp-list-table widefat fixed striped pages">
+                <tr>
+                    <th scope="row" class="manage-column num desc"><?php _e( 'ID Referral' ); ?></th>
+                    <th scope="row" class="manage-column num desc"><?php _e( 'status' ); ?></th>
+                </tr>
+
+                <?php
+                foreach ($data_array as $item) {
+                    ?>
+                    <tr >
+                        <td class="manage-column num desc"><?php echo $item->post_id ?></td>
+                        <td class="manage-column num desc" id="<?php echo $item->post_id ?>"><?php echo $item->meta_value ?></td>
+                    </tr>
+                <?php } ?>
+            </table>
+        </form>
+        <?php
+        $html = ob_get_clean();
+        echo $html;
+        return;
+    }
+
+    function so_wp_ajax_function()
+    {
+        $order_id = $_POST['order_id'];
+
+        $transaction_hash = get_post_meta( $order_id, 'transaction_hash', true );
+
+        $status = get_post_meta( $order_id, 'reward_status', true );
+
+        $ref_by = get_post_meta( $order_id, 'ref_by', true );
+
+        $wallet_address = $this->get_address_referral( $ref_by );
+
+        $new_status = $this->check_status_transaction_hash( $transaction_hash );
+
+        if ( $status != $new_status ) {
+            update_post_meta( $order_id, 'reward_status', $new_status );
+        }
+
+        switch ( $new_status ) {
+            case 'error':
+                // Gui email
+                $message = 'fail. email send';
+                break;
+            case 'success':
+                // Gui email
+                $message = 'success. email send';
+                break;
+        }
+
+        wp_send_json_success( array( 'reward_status' => $new_status, 'message' => $message ) );
+    }
+
+    public function enqueue_scripts()
+    {
+        wp_enqueue_script( 'send_token_ajax', plugin_dir_url( __FILE__ ) . 'assets/pay_the_reward.js', array( 'jquery' ) );
+
+        wp_localize_script( 'send_token_ajax', 'send_token_ajax_data',
+            array(
+                'ajax_url' => admin_url( 'admin-ajax.php' )
+            )
+        );
+    }
+
+    public function get_id_referral( $order_id )
+    {
+      return get_post_meta( $order_id, 'ref_by', true );
+    }
+
+    public function get_address_referral( $referral_id )
+    {
+        //call api take address referral
+        $address_referral = '0x524861A251f02ef0c31ab67326D59E6465990f9D';
+        return $address_referral;
+    }
+
+    public function get_hash_from_send_transaction( $address_referral, $amount )
+    {
+        // wait install composer send transaction
+        $transaction_hash = '';
+//        $transaction_hash = '0xca1147d3543e51049ef00a6adc8617aceee5e08c6fd9c9338f09e0f928aa8008'; // khong thanh cong
+        $transaction_hash = '0xa7f33447f68e9aee879621569326e133513fb90ee8d6b3bed08b095fe8828b77'; // thanh cong
+        return $transaction_hash;
+    }
+
+    public function save_transaction_hash( $order_id, $transaction_hash )
+    {
+        add_post_meta( $order_id, 'transaction_hash', $transaction_hash );
+    }
+
+    // call api check status transaction hash
+    public function check_status_transaction_hash( $hash )
+    {
+        // call api check status transaction hash
+        $url = 'https://explorer.nexty.io/api?module=transaction&action=getstatus&txhash='.$hash;
+
+        $response = wp_remote_get($url);
+
+        $result = (json_decode($response['body'])->result->isError);
+
+        if( $result === "1" ) {
+            return 'error';
+        }
+
+        return 'success';
+
     }
 }
