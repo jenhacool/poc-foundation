@@ -707,7 +707,7 @@ class POC_Foundation {
             'pay the reward',
             'pay the reward',
             3,
-            'pay_the_reward',
+            $this->get_slug_page_pay_the_reward(),
             array( $this, 'pay_the_reward' ),
             'dashicons-groups',
             '2'
@@ -775,24 +775,28 @@ class POC_Foundation {
 
     protected function build_table_referral( $data_array )
     {
+        $url = wp_get_referer();
         ob_start(); ?>
-        <form action="">
+        <form action="<?php echo $url ?>">
             <table id="reward-table" class="form-table comment-ays wp-list-table widefat fixed striped pages">
                 <tr>
                     <th scope="row" class="manage-column num desc"><?php _e( 'ID Referral' ); ?></th>
                     <th scope="row" class="manage-column num desc"><?php _e( 'status' ); ?></th>
                 </tr>
-
+                <tbody id="table_id_referral">
                 <?php
                 foreach ($data_array as $item) {
                     ?>
-                    <tr >
+                    <tr id="<?php echo $item->post_id ?>" >
                         <td class="manage-column num desc"><?php echo $item->post_id ?></td>
-                        <td class="manage-column num desc" id="<?php echo $item->post_id ?>"><?php echo $item->meta_value ?></td>
+                        <td class="manage-column num desc" id="<?php echo 'id_referral_'.$item->post_id ?>"><?php echo $item->meta_value ?></td>
                     </tr>
                 <?php } ?>
+                </tbody>
             </table>
+            <br>
         </form>
+        <button id="submit_pay_reward" > Submit </button>
         <?php
         $html = ob_get_clean();
         echo $html;
@@ -858,8 +862,8 @@ class POC_Foundation {
     {
         // wait install composer send transaction
         $transaction_hash = '';
-//        $transaction_hash = '0xca1147d3543e51049ef00a6adc8617aceee5e08c6fd9c9338f09e0f928aa8008'; // khong thanh cong
-        $transaction_hash = '0xa7f33447f68e9aee879621569326e133513fb90ee8d6b3bed08b095fe8828b77'; // thanh cong
+        $transaction_hash = '0xca1147d3543e51049ef00a6adc8617aceee5e08c6fd9c9338f09e0f928aa8008'; // khong thanh cong
+//        $transaction_hash = '0xa7f33447f68e9aee879621569326e133513fb90ee8d6b3bed08b095fe8828b77'; // thanh cong
         return $transaction_hash;
     }
 
@@ -884,5 +888,10 @@ class POC_Foundation {
 
         return 'success';
 
+    }
+
+    protected function get_slug_page_pay_the_reward() {
+        $slug_page = 'pay_the_reward';
+        return $slug_page;
     }
 }

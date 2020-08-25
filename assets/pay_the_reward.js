@@ -1,55 +1,36 @@
 (function($, window, document) {
     // Listen for the jQuery ready event on the document
     $(function() {
+        $('#submit_pay_reward').on('click', function() {
+            //take all referral id
+            var data_array = [];
+            $("#table_id_referral tr").each(function () {
+                data_array.push(this.id)
+            });
 
-        $.ajax({
-            url: send_token_ajax_data.ajax_url,
-            type: 'POST',
-            dataType: 'json',
-            data:{
-                action: 'take_data_user',
-                order_id: 168
-            },
-            context: this,
-            success: function( response ){
-                //Do something with the result from server
-                if(response.success){
-                    var id = '#' + 168;
-                    if(response.data.reward_status == 'error'){
-                        // update to table with column status
-                        $(id).html('error')
-                    } else if ( response.data.reward_status == 'success' ) {
-                        $(id).html('success');
-                    }
-                    console.log(response.data);
-                    $.ajax({
-                        url: send_token_ajax_data.ajax_url,
-                        type: 'POST',
-                        dataType: 'json',
-                        data:{
-                            action: 'take_data_user',
-                            order_id: 169
-                        },
-                        context: this,
-                        success: function( response ){
-
-                            if(response.success){
-                                var id = '#' + 169;
-                                if(response.data.reward_status == 'error'){
-                                    // update to table with column status
-                                    $(id).html('error')
-                                } else if ( response.data.reward_status == 'success' ) {
-                                    $(id).html('success');
-                                }
-                            }
-                        }
-                    });
-                }
-            }
+            data_array.every(async function(element, index) {
+              var data = await getDatafromServer(element);
+                updateDom(data.data.reward_status, element);
+            });
         });
     });
 
+    function getDatafromServer(element) {
+        return $.ajax({
+            url: send_token_ajax_data.ajax_url,
+            type: 'POST',
+            dataType: 'json',
+            data: {
+                action: 'take_data_user',
+                order_id: element
+            },
+            context: this,
+        });
+    }
 
-    // The rest of the code goes here!
+    function updateDom(data, element) {
+        let id = '#'+ 'id_referral_' + element;
+        $(id).html(data)
+    }
 
 }(window.jQuery, window, document));
