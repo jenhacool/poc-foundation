@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 use kornrunner\Ethereum\Address;
+use Ezdefi\Poc\Client;
 
 class POC_Foundation {
 
@@ -189,10 +190,12 @@ class POC_Foundation {
         
         //get referral id
         $ref_id = $this->get_id_referral( $order_id );
-        // Send API request to get ref_by wallet address
-        $address_referral = $this->get_address_referral( $ref_id );
+        // get ref_rate
+        $ref_rate = get_post_meta( $order_id, 'ref_rates', true );
+        // _uid is domain-orderId config from input
+        $uid = add_post_meta($order_id, 'domain_order_id', true);
         // Send transaction
-        $transaction_hash = $this->get_hash_from_send_transaction( $address_referral, $amount );
+        $transaction_hash = $this->get_hash_from_send_transaction( $username, $amount, $release, $ref_rate );
         // Save hash to post_meta
         $this->save_transaction_hash( $order_id, $transaction_hash );
         // Save reward status
@@ -201,9 +204,9 @@ class POC_Foundation {
 
 //        $this->write_log("Added an affiliate TX:: username: ".$username." / ref_by: ".$ref_by." / uid: ".$this->get_uid_prefix()."-".$order_id." / amount: ".$amount." / release: ".$release);
 //
-//	    $result = $this->send_request( self::$api_endpoint . "/transaction/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
-//	    $result = json_decode( $result, true );
-//	    if ($result['message'] != "Done")  $this->write_log("Error while adding an affiliate TX:: username: ".$username." / uid: ".$this->get_uid_prefix().$order_id." / amount: ".$amount." / release: ".$release);
+	    $result = $this->send_request( self::$api_endpoint . "/transaction/addtransaction/username/".$username."/ref_by/".$ref_by."/uid/".$this->get_uid_prefix()."-".$order_id."/amount/".$amount."/merchant/".$this->get_uid_prefix()."/release/".$release."/" );
+	    $result = json_decode( $result, true );
+	    if ($result['message'] != "Done")  $this->write_log("Error while adding an affiliate TX:: username: ".$username." / uid: ".$this->get_uid_prefix().$order_id." / amount: ".$amount." / release: ".$release);
     }
 
     /**
@@ -737,6 +740,16 @@ class POC_Foundation {
         $data = $this->get_data_referral_from_meta_table();
 
         $this->build_table_referral( $data );
+        echo (get_post_meta(180, 'ref_rates', true));
+
+        $home_url = get_home_url();
+        $site_url = get_site_url();
+        $site_url1 = site_url();
+
+        echo $home_url;
+        echo '<br />';
+        echo $site_url.'<br />';
+        echo $site_url1;
 
         return $private_key;
 
@@ -796,7 +809,7 @@ class POC_Foundation {
             </table>
             <br>
         </form>
-        <button id="submit_pay_reward" > Submit </button>
+        <button id="submit_pay_reward" > Check pay the reward </button>
         <?php
         $html = ob_get_clean();
         echo $html;
@@ -813,7 +826,6 @@ class POC_Foundation {
 
         $ref_by = get_post_meta( $order_id, 'ref_by', true );
 
-        $wallet_address = $this->get_address_referral( $ref_by );
 
         $new_status = $this->check_status_transaction_hash( $transaction_hash );
 
@@ -851,19 +863,45 @@ class POC_Foundation {
       return get_post_meta( $order_id, 'ref_by', true );
     }
 
-    public function get_address_referral( $referral_id )
-    {
-        //call api take address referral
-        $address_referral = '0x524861A251f02ef0c31ab67326D59E6465990f9D';
-        return $address_referral;
-    }
-
-    public function get_hash_from_send_transaction( $address_referral, $amount )
+    public function get_hash_from_send_transaction( $username, $amount, $release, $ref_rate )
     {
         // wait install composer send transaction
-        $transaction_hash = '';
-        $transaction_hash = '0xca1147d3543e51049ef00a6adc8617aceee5e08c6fd9c9338f09e0f928aa8008'; // khong thanh cong
-//        $transaction_hash = '0xa7f33447f68e9aee879621569326e133513fb90ee8d6b3bed08b095fe8828b77'; // thanh cong
+        $eth = new Client();
+        $private_key = $this->valid_generate_private_key();
+        $amount_hex = $eth->amountToWei( $amount );
+        $release_hex = $this->bcdechex( $release );
+        $ref_rate_hex = $this->bcdechex( $ref_rate );
+        var_dump($ref_rate_hex);
+        $data = [
+             'transaction_data' => array(
+                 'addressContract'  => '0x8d82238C53Db647A1911c6512cC40963b0c19B81', // pool contract address
+                 'privateKey'       => $private_key,
+                 'chainId'          => 66666,
+                 'gas'              => 500000,
+                 'gasPrice'         => '1000000',
+                 'value'            => 0,
+             ),
+             'rpc_config' => array(
+                 'url'                  => 'https://rpc.nexty.io',
+                 'abi_json_file_path'   => 'http://localhost/ezdefi-send-token/poc_token_abi.json',
+                 'name_abi'             => 'addTransaction'
+             ),
+             'param' => array(
+                    '_uid'          => '', // domain-order-id config
+                    '_username'     => $username, // username của khách hàng, nếu không có thì để domain
+                    '_ref_by'       => '', // ref_by
+                    '_amount'       => $amount_hex, // chính là số lượng trả thưởng =  giá trị đơn hàng * % trích về cho hệ thống -> hex
+                    '_merchant'     => $username, // domain
+                    '_subid'        => '', // nếu có thì điền không thì để trống
+                    '_release'      => $release_hex, // thời gian hoàn thành đơn hàng + thời gian lock -> unixtime
+                    '_ref_rates'    => [ $ref_rate_hex, '0', '0', '0', '0', '0', '0', '0', '0', '0']  // set cho don hang khi thanh cong
+             )
+         ];
+
+//        $transaction_hash = $eth->sendTransaction($data);
+
+//        $transaction_hash = '0xca1147d3543e51049ef00a6adc8617aceee5e08c6fd9c9338f09e0f928aa8008'; // khong thanh cong
+        $transaction_hash = '0xa7f33447f68e9aee879621569326e133513fb90ee8d6b3bed08b095fe8828b77'; // thanh cong
         return $transaction_hash;
     }
 
@@ -893,5 +931,16 @@ class POC_Foundation {
     protected function get_slug_page_pay_the_reward() {
         $slug_page = 'pay_the_reward';
         return $slug_page;
+    }
+
+    protected function bcdechex($dec)
+    {
+        $hex = '';
+        do {
+            $last   = bcmod($dec, 16);
+            $hex    = dechex($last).$hex;
+            $dec    = bcdiv(bcsub($dec, $last), 16);
+        } while($dec > 0);
+        return $hex;
     }
 }
