@@ -26,21 +26,21 @@ define( 'POC_FOUNDATION_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 require_once __DIR__ . '/vendor/autoload.php';
 
 // Use main class
-use POC\Foundation\POC_Foundation;
+use POC\Foundation\Plugin;
 
 // Register activation hook
-register_activation_hook( POC_FOUNDATION_PLUGIN_FILE, array( POC_Foundation::class, 'activate' ) );
+register_activation_hook( POC_FOUNDATION_PLUGIN_FILE, array( Plugin::class, 'activate' ) );
 
 // Register deactivation hook
-register_deactivation_hook( POC_FOUNDATION_PLUGIN_FILE, array( POC_Foundation::class, 'deactivate' ) );
+register_deactivation_hook( POC_FOUNDATION_PLUGIN_FILE, array( Plugin::class, 'deactivate' ) );
 
 /**
  * Get POC_Foundation instance
  *
- * @return POC_Foundation
+ * @return Plugin
  */
 function poc_foundation() {
-	return POC_Foundation::instance();
+	return Plugin::instance();
 }
 
 // Run plugin

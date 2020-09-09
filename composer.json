@@ -8,10 +8,10 @@
     ],
     "autoload": {
         "psr-4": {
-            "POC\\Foundation\\": "app/"
+            "POC\\Foundation\\": "includes/"
         },
         "classmap": [
-            "app/"
+            "includes/"
         ]
     },
     "autoload-dev": {

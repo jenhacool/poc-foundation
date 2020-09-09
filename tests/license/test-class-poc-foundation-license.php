@@ -1,10 +1,10 @@
 <?php
 
-use POC\Foundation\License\POC_Foundation_License;
-use POC\Foundation\License\POC_Foundation_License_Server;
+use POC\Foundation\License\License;
+use POC\Foundation\License\License_Server;
 use Mockery as m;
 
-class Test_Class_POC_Foundation_License extends \WP_UnitTestCase
+class Test_Class_License extends \WP_UnitTestCase
 {
 	public $instance;
 
@@ -12,7 +12,7 @@ class Test_Class_POC_Foundation_License extends \WP_UnitTestCase
 	{
 		parent::setUp();
 
-		$this->instance = new POC_Foundation_License();
+		$this->instance = new License();
 	}
 
 	public function tearDown() {
@@ -30,10 +30,10 @@ class Test_Class_POC_Foundation_License extends \WP_UnitTestCase
 			'status' => 'Active'
 		);
 
-		$license_server_mock = m::mock( POC_Foundation_License_Server::class );
+		$license_server_mock = m::mock( License_Server::class );
 		$license_server_mock->shouldReceive( 'check' )->once()->with( 'license_key', '' )->andReturn( $license_data );
 
-		$mock = m::mock( POC_Foundation_License::class )->makePartial()->shouldAllowMockingProtectedMethods();
+		$mock = m::mock( License::class )->makePartial()->shouldAllowMockingProtectedMethods();
 		$mock->shouldReceive( 'get_license_server' )->once()->andReturn( $license_server_mock );
 
 		$mock->get_license_data( 'license_key' );
@@ -52,10 +52,10 @@ class Test_Class_POC_Foundation_License extends \WP_UnitTestCase
 			'status' => 'Active'
 		);
 
-		$license_server_mock = m::mock( POC_Foundation_License_Server::class );
+		$license_server_mock = m::mock( License_Server::class );
 		$license_server_mock->shouldReceive( 'check' )->once()->with( 'license_key', 'saved_local_key' )->andReturn( $license_data );
 
-		$mock = m::mock( POC_Foundation_License::class )->makePartial()->shouldAllowMockingProtectedMethods();
+		$mock = m::mock( License::class )->makePartial()->shouldAllowMockingProtectedMethods();
 		$mock->shouldReceive( 'get_license_server' )->once()->andReturn( $license_server_mock );
 
 		$this->assertEquals( $license_data, $mock->get_license_data( 'license_key' ) );
