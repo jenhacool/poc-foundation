@@ -30,7 +30,7 @@ class Test_Class_Admin_Settings extends \WP_UnitTestCase
 		$this->assertGreaterThan(
 			0,
 			has_action(
-				'admin_init',
+				'wp_loaded',
 				array( $this->instance, 'save_settings' )
 			)
 		);

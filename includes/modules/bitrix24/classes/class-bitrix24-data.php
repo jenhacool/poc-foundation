@@ -2,8 +2,6 @@
 
 namespace POC\Foundation\Modules\Bitrix24\Classes;
 
-use POC\Foundation\Modules\Bitrix24\Classes\Bitrix24_API;
-
 class Bitrix24_Data
 {
 	const STAGES_TRANSIENT_KEY = 'poc_foundation_bitrix24_stages';

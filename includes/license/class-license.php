@@ -51,10 +51,11 @@ class License
 
 		$license_data = $this->get_license_server()->check( $license_key, $local_key );
 
-		if ( $refresh || ( isset( $license_data['status'] ) && $license_data['status'] != 'Active' ) ) {
-			set_transient( 'poc_foundation_license_data', $license_data, 12 * HOUR_IN_SECONDS );
-			return $license_data;
+		if ( ! isset( $license_data['status'] ) || $license_data['status'] != 'Active' ) {
+			return null;
 		}
+
+		set_transient( 'poc_foundation_license_data', $license_data, 12 * HOUR_IN_SECONDS );
 
 		update_option( 'poc_foundation_license_key', $license_key );
 
@@ -62,13 +63,11 @@ class License
 			update_option( 'poc_foundation_license_local_key', $license_data['local_key'] );
 		}
 
-		set_transient( 'poc_foundation_license_data', $license_data, 12 * HOUR_IN_SECONDS );
-
 		return $license_data;
 	}
 
 	protected function get_license_server()
 	{
-		return new POC_Foundation_License_Server();
+		return new License_Server();
 	}
 }

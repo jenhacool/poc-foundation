@@ -1,37 +1,120 @@
 (function($) {
     window.poc_foundation_setup_wizard = {
         init: function() {
-            var timeout = null;
+            $('#step-license').on('submit', function(e) {
+                e.preventDefault();
+                poc_foundation_setup_wizard.checkLicenseKey();
+            })
 
-            $('input#license_key').on('keyup', function() {
-                clearTimeout(timeout);
-                timeout = setTimeout(function () {
-                    poc_foundation_setup_wizard.checkLicenseKey();
-                }, 600);
+            $('#step-plugins').on('submit', function(e) {
+                e.preventDefault();
+                poc_foundation_setup_wizard.setupPlugins();
+            });
+
+            $('#step-config').validate({
+                rules: {
+                    'poc_foundation[api_key]': 'required',
+                    'poc_foundation[uid_prefix]': 'required',
+                    'poc_foundation[default_discount]': 'required',
+                    'poc_foundation[default_revenue_share]': 'required',
+                }
             })
         },
         checkLicenseKey: function() {
+            var license_key = $('input#license_key').val().trim();
+
+            if(license_key.length === 0) {
+                return false;
+            }
+
             $.ajax({
                 url: poc_foundation_setup_data.ajax_url,
                 type: 'POST',
                 dataType: 'JSON',
                 data: {
                     'action': 'poc_foundation_check_license_key',
-                    'license_key': $('input#license_key').val(),
+                    'license_key': license_key,
                 },
                 beforeSend: function() {
                     $('input#license_key').prop('disabled', true);
-                    $('.setup-actions').hide();
+                    $('input[type="submit"]').prop('disabled', true);
                 },
                 success: function (response) {
                     if(response.data.is_valid) {
-                        $('input#license_key').prop('disabled', false);
-                        $('.setup-actions').show();
+                        window.location.href = poc_foundation_setup_data.next_step_link;
                     } else {
                         alert('License key is not valid. Please try again.');
+                        $('input#license_key').prop('disabled', false);
                     }
                 }
             })
+        },
+        setupPlugins: function() {
+            var items_completed = 0;
+            var current_item = '';
+            var current_node;
+
+            $('#step-plugins input[type="submit"]').prop('disabled', true);
+
+            function run_loop() {
+                var do_next = false;
+                if(current_node){
+                    if(!current_node.data('done_item')){
+                        items_completed++;
+                        current_node.data('done_item',1);
+                    }
+                }
+                var items = $('#step-plugins table tbody tr')
+                items.each(function() {
+                    if(current_item === '' || do_next){
+                        current_item = $(this).data('slug');
+                        current_node = $(this);
+                        setup();
+                        do_next = false;
+                    }else if($(this).data('slug') === current_item){
+                        do_next = true;
+                    }
+                });
+                if(items_completed >= items.length){
+                    done();
+                }
+            }
+
+            function setup() {
+                current_node.find('td').html('<span class="spinner is-active"></span>');
+                $.ajax({
+                    url: poc_foundation_setup_data.ajax_url,
+                    type: 'POST',
+                    data: {
+                        'action': 'poc_foundation_setup_plugin',
+                        'slug': current_item
+                    },
+                    success: function (response) {
+                        if(response.data.status === 'done') {
+                            setup_success(response);
+                        }
+                    }
+                })
+            }
+
+            function setup_success() {
+                current_node.find('td').html('<span class="dashicons dashicons-yes"></span>');
+                run_loop();
+            }
+
+            function done() {
+                $.post(poc_foundation_setup_data.ajax_url, {
+                    'action': 'poc_foundation_clear_update_cache',
+                }).done(function() {
+                    redirect();
+                });
+            }
+
+            function redirect() {
+                window.location.href = poc_foundation_setup_data.next_step_link;
+            }
+
+            run_loop();
         }
     }
 

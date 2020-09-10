@@ -50,11 +50,11 @@ class Test_Class_Order_Actions extends \WP_UnitTestCase
 			)
 		);
 
-		$this->assertGreanterThan(
+		$this->assertGreaterThan(
 			0,
-			has_action(
+			has_filter(
 				'woocommerce_coupon_get_discount_amount',
-				array( $this, 'get_discount_amount' )
+				array( $this->instance, 'get_discount_amount' )
 			)
 		);
 	}

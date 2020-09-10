@@ -1,6 +1,6 @@
 <?php
 
-use POC\Foundation\Admin\Admin_Asset;
+use POC\Foundation\Admin\Hooks\Admin_Asset;
 
 class Test_Class_Admin_Asset extends \WP_UnitTestCase {
 	public $instance;

@@ -1,8 +1,8 @@
 <?php
 
 use Mockery as m;
-use POC\Foundation\Admin\ElementorPro\Elementor_Pro;
-use POC\Foundation\Plugin_Manager;
+use POC\Foundation\Admin\Classes\Elementor_Pro;
+use POC\Foundation\Admin\Classes\Plugin_Manager;
 
 class Test_Class_Elementor_Pro extends \WP_UnitTestCase
 {

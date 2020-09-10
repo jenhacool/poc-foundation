@@ -55,11 +55,11 @@ class Test_Class_Cart_Actions extends \WP_UnitTestCase
 		$_COOKIE['ref_by'] = 'jenhacool';
 
 		$cart_mock = m::mock( \WC_Cart::class )->makePartial()->shouldAllowMockingProtectedMethods();
-		$cart_mock->shouldReceive( 'get_applied_coupons' )->once()->andReturn( array() );
+		$cart_mock->shouldReceive( 'get_applied_coupons' )->andReturn( array() );
 		$cart_mock->shouldReceive( 'add_discount' )->once()->with( 'jenhacool' )->andReturn( true );
 
 		$mock = m::mock( Cart_Actions::class )->makePartial()->shouldAllowMockingProtectedMethods();
-		$mock->shouldReceive( 'get_cart' )->once()->andReturn( $cart_mock );
+		$mock->shouldReceive( 'get_cart' )->andReturn( $cart_mock );
 		$mock->shouldReceive( 'is_coupon_valid' )->once()->with( 'jenhacool' )->andReturn( true );
 
 		$this->assertNull( $mock->apply_coupon_by_ref_by() );
@@ -78,11 +78,11 @@ class Test_Class_Cart_Actions extends \WP_UnitTestCase
 		$post_data = 'billing_phone=01234567890&billing_email=admin%40gmail.com';
 
 		$cart_mock = m::mock( \WC_Cart::class )->makePartial()->shouldAllowMockingProtectedMethods();
-		$cart_mock->shouldReceive( 'get_applied_coupons' )->once()->andReturn( array() );
+		$cart_mock->shouldReceive( 'get_applied_coupons' )->andReturn( array() );
 		$cart_mock->shouldReceive( 'add_discount' )->once()->with( 'jenhacool' )->andReturn();
 
 		$mock = m::mock( Cart_Actions::class )->makePartial()->shouldAllowMockingProtectedMethods();
-		$mock->shouldReceive( 'get_cart' )->once()->andReturn( $cart_mock );
+		$mock->shouldReceive( 'get_cart' )->andReturn( $cart_mock );
 		$mock->shouldReceive( 'is_coupon_valid' )->once()->with( 'jenhacool' )->andReturn( true );
 
 		$this->assertNull( $mock->apply_coupon_by_customer_info( $post_data ) );

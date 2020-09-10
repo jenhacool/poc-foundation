@@ -4,6 +4,10 @@ body {
   background: #f1f1f1;
   padding: 0;
 }
+body h1 {
+  border-bottom: none;
+  text-align: center;
+}
 body .setup-steps {
   padding: 0 0 24px;
   margin: 0;
@@ -102,12 +106,25 @@ body .setup-content .form-table td select, body .setup-content .form-table td in
   width: 100%;
   box-sizing: border-box;
 }
+body .setup-content .form-table td select.error, body .setup-content .form-table td input.error {
+  border-color: red;
+}
+body .setup-content .form-table td label.error {
+  margin-top: 0.25rem;
+  display: block;
+  color: red;
+}
 body .setup-content .form-table td .description {
   line-height: 1.5em;
   display: block;
   margin-top: 0.25em;
+  margin-bottom: 0;
   color: #999;
   font-style: italic;
+}
+body .setup-content #step-plugins span.spinner {
+  float: left;
+  margin: 0;
 }
 body .setup-actions {
   overflow: hidden;

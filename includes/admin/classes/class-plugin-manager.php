@@ -1,8 +1,8 @@
 <?php
 
-namespace POC\Foundation\Admin\Wizard;
+namespace POC\Foundation\Admin\Classes;
 
-use POC\Foundation\Admin\ElementorPro\Elementor_Pro;
+use POC\Foundation\Admin\Classes\Elementor_Pro;
 
 class Plugin_Manager
 {

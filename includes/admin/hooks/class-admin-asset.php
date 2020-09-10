@@ -31,7 +31,7 @@ class Admin_Asset implements Hook
 			wp_enqueue_script( 'poc-foundation-setup-wizard' );
 		}
 
-		wp_register_script( 'poc-foundation-admin', POC_FOUNDATION_PLUGIN_URL . '/assets/js/admin.js', array( 'jquery' ), time() );
+		wp_register_script( 'poc-foundation-admin', POC_FOUNDATION_PLUGIN_URL . '/admin/assets/js/admin.js', array( 'jquery' ), time() );
 		wp_localize_script(
 			'poc-foundation-admin',
 			'poc_foundation_params',

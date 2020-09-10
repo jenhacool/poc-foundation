@@ -1,6 +1,6 @@
 <?php
 
-use POC\Foundation\Admin\Wizard\Plugin_Manager;
+use POC\Foundation\Admin\Classes\Plugin_Manager;
 use Mockery as m;
 
 class Test_Class_Plugin_Manager extends \WP_UnitTestCase
@@ -38,7 +38,7 @@ class Test_Class_Plugin_Manager extends \WP_UnitTestCase
 
 		$mock->shouldReceive( 'is_plugin_installed' )->once()->with( 'elementor' )->andReturn( true );
 		$mock->shouldReceive( 'is_plugin_active' )->once()->with( 'elementor' )->andReturn( true );
-		$mock->shouldReceive( 'is_plugin_updateable' )->once()->with( 'elementor' )->andReturn( true );
+		$mock->shouldReceive( 'is_plugin_updateable' )->once()->with( 'elementor' )->andReturn( false );
 		$mock->shouldReceive( 'update_plugin' )->once()->with( 'elementor' )->andReturn( true );
 
 		$this->assertTrue( $mock->setup_plugin( 'woocommerce' ) );
@@ -75,7 +75,7 @@ class Test_Class_Plugin_Manager extends \WP_UnitTestCase
 	public function test_upgrade_plugin()
 	{
 		$plugin_upgrader_mock = $this->get_plugin_upgrader_mock();
-		$plugin_upgrader_mock->shouldReceive( 'upgrade' )->once()->with( 'woocommerce/woocommerce.php' )->andReturn( true );
+		$plugin_upgrader_mock->shouldReceive( 'upgrade' )->once()->with( 'woocommerce/woocommerce.php', array( 'clear_update_cache' => false ) )->andReturn( true );
 
 		$plugin_manager_mock = $this->get_plugin_manager_mock();
 		$plugin_manager_mock->shouldReceive( 'get_required_plugins' )->once()->andReturn( array(

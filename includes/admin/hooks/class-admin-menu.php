@@ -55,12 +55,6 @@ class Admin_Menu implements Hook
 				'menu_title' => __( 'License', 'poc-foundation' ),
 				'menu_slug' => 'poc-foundation-license',
 				'callback' => array( License_Page::class, 'render' )
-			),
-			array(
-				'page_title' => __( 'Getting Started', 'poc-foundation' ),
-				'menu_title' => __( 'Getting Started', 'poc-foundation' ),
-				'menu_slug' => 'poc-foundation-getting-started',
-				'callback' => array( Getting_Started_Page::class, 'render' )
 			)
 		);
 

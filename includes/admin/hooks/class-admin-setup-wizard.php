@@ -2,10 +2,15 @@
 
 namespace POC\Foundation\Admin\Hooks;
 
+use POC\Foundation\Admin\Classes\Plugin_Manager;
+use POC\Foundation\Classes\Option;
 use POC\Foundation\Contracts\Hook;
+use POC\Foundation\License\License;
 
 class Admin_Setup_Wizard implements Hook
 {
+    const PAGE_SLUG = 'poc-foundation-setup';
+
 	private $step = '';
 
 	private $steps = array();
@@ -15,18 +20,16 @@ class Admin_Setup_Wizard implements Hook
 		add_action( 'admin_menu', array( $this, 'add_setup_wizard_page' ) );
 
 		add_action( 'admin_init', array( $this, 'show_setup_wizard_page' ) );
-
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 	}
 
 	public function add_setup_wizard_page()
 	{
-		add_dashboard_page( '', '', 'manage_options', 'poc-foundation-setup', '' );
+		add_dashboard_page( '', '', 'manage_options', self::PAGE_SLUG, '' );
 	}
 
 	public function show_setup_wizard_page()
 	{
-		if ( empty( $_GET['page'] ) || 'poc-foundation-setup' !== $_GET['page'] ) {
+		if ( empty( $_GET['page'] ) || self::PAGE_SLUG !== $_GET['page'] ) {
 			return;
 		}
 
@@ -34,7 +37,7 @@ class Admin_Setup_Wizard implements Hook
 			'introduction' => array(
 				'name'    =>  __( 'Introduction', 'poc-foundation' ),
 				'view'    => array( $this, 'step_introduction' ),
-				'handler' => ''
+				'handler' => array( $this, 'redirect_to_next_step' )
 			),
 			'license' => array(
 				'name' => __( 'License', 'poc_foundation' ),
@@ -49,14 +52,21 @@ class Admin_Setup_Wizard implements Hook
 			'config' => array(
 				'name' => __( 'Config', 'poc_foundation' ),
 				'view' => array( $this, 'step_config' ),
-				'handler' => ''
+				'handler' => array( $this, 'redirect_to_next_step' )
 			),
+            'done' => array(
+                'name' => __( 'Done', 'poc_foundation' ),
+                'view' => array( $this, 'step_done' ),
+                'handler' => ''
+            )
 		);
 
 		$this->step = isset( $_GET['step'] ) ? sanitize_key( $_GET['step'] ) : current( array_keys( $this->steps ) );
 
+		$this->enqueue_scripts();
+
 		if ( ! empty( $_POST['save_step'] ) && isset( $this->steps[ $this->step ]['handler'] ) ) {
-			call_user_func( $this->steps[ $this->step ]['handler'], $this );
+			call_user_func($this->steps[$this->step]['handler'], $this);
 		}
 
 		ob_start();
@@ -76,19 +86,22 @@ class Admin_Setup_Wizard implements Hook
 				<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 				<title><?php esc_html_e( 'WooCommerce &rsaquo; Setup Wizard', 'woocommerce' ); ?></title>
 				<?php do_action( 'admin_enqueue_scripts' ); ?>
+				<?php wp_print_scripts( 'jquery-validation' ); ?>
 				<?php wp_print_scripts( 'poc-foundation-setup' ); ?>
 				<?php do_action( 'admin_print_styles' ); ?>
 				<?php do_action( 'admin_head' ); ?>
 			</head>
 		<body class="poc-foundation-setup wp-core-ui">
-			<h1>POC Foundation Setup Wizard</h1>
+			<h1><?php echo __( 'POC Foundation Setup Wizard', 'poc-foundation' ); ?></h1>
 		<?php
 	}
 
 	public function setup_wizard_footer() {
 		?>
-			<?php if ( 'next_steps' === $this->step ) : ?>
-				<a class="poc-foundation-return-to-dashboard" href="<?php echo esc_url( admin_url() ); ?>"><?php esc_html_e( 'Return to the WordPress Dashboard', 'erp' ); ?></a>
+			<?php if ( 'done' === $this->step ) : ?>
+				<p>
+                    <a class="poc-foundation-return-to-dashboard" href="<?php echo esc_url( admin_url() ); ?>"><?php esc_html_e( 'Return to the WordPress Dashboard', 'erp' ); ?></a>
+                </p>
 			<?php endif; ?>
 		</body>
 		</html>
@@ -97,53 +110,84 @@ class Admin_Setup_Wizard implements Hook
 
 	public function setup_wizard_steps() {
 		$output_steps = $this->steps;
-		array_shift( $output_steps );
 		?>
 		<ol class="setup-steps">
 			<?php foreach ( $output_steps as $step_key => $step ) : ?>
-				<li class="<?php
-				if ( $step_key === $this->step ) {
-					echo 'active';
-				} elseif ( array_search( $this->step, array_keys( $this->steps ) ) > array_search( $step_key, array_keys( $this->steps ) ) ) {
-					echo 'done';
-				}
-				?>"><a href="<?php echo esc_url( admin_url( 'index.php?page=poc-foundation-setup&step=' . $step_key ) ); ?>"><?php echo esc_html( $step['name'] ); ?></a>
+				<?php
+                    $li_class = '';
+                    if ( $step_key === $this->step ) {
+                        $li_class = 'active';
+                    } elseif ( array_search( $this->step, array_keys( $this->steps ) ) > array_search( $step_key, array_keys( $this->steps ) ) ) {
+                        $li_class = 'done';
+                    }
+				?>
+				<li style="width: <?php echo ( 100 / count( $this->steps ) ) ;?>%" class="<?php echo $li_class; ?>">
+                    <a href="<?php echo esc_url( $this->get_step_link( $step_key ) ); ?>"><?php echo esc_html( $step['name'] ); ?></a>
 				</li>
 			<?php endforeach; ?>
 		</ol>
 		<?php
 	}
 
-	public function setup_wizard_content() {
-		echo '<div class="setup-content">';
-		call_user_func( $this->steps[ $this->step ]['view'] );
-		echo '</div>';
+	public function setup_wizard_content()
+    {
+        ?>
+        <?php if ( $this->step != 'license' && ! $this->is_license_valid() ) : ?>
+            <script>
+                window.location.href = "<?php echo $this->get_license_step_link(); ?>";
+            </script>
+        <?php else : ?>
+            <div class="setup-content">
+                <?php call_user_func( $this->steps[ $this->step ]['view'] ); ?>
+            </div>
+        <?php endif;
 	}
 
-	public function next_step_buttons() {
+	protected function next_step_buttons( $submit_text = 'Continue', $allow_skip = false ) {
 		?>
 		<p class="setup-actions step">
-			<input type="submit" class="button-primary button button-next" value="<?php esc_attr_e( 'Continue', 'poc-foundation' ); ?>" name="save_step" />
-			<a href="<?php echo esc_url( $this->get_next_step_link() ); ?>" class="button button-next"><?php esc_html_e( 'Skip this step', 'poc-foundation' ); ?></a>
+			<input type="submit" class="button-primary button button-next" value="<?php esc_attr_e( $submit_text, 'poc-foundation' ); ?>" name="save_step" />
+            <?php if ( $allow_skip ) : ?>
+			    <a href="<?php echo esc_url( $this->get_next_step_link() ); ?>" class="button button-next"><?php esc_html_e( 'Skip this step', 'poc-foundation' ); ?></a>
+            <?php endif; ?>
 			<?php wp_nonce_field( 'erp-setup' ); ?>
 		</p>
 		<?php
 	}
 
-	public function get_next_step_link() {
-		$keys = array_keys( $this->steps );
-		return add_query_arg( 'step', $keys[ array_search( $this->step, array_keys( $this->steps ) ) + 1 ], remove_query_arg( 'translation_updated' ) );
+	protected function get_license_step_link()
+    {
+        return admin_url( 'index.php?page=poc-foundation-setup&step=license' );
+    }
+
+    protected function get_next_step_key()
+    {
+	    $keys = array_keys( $this->steps );
+
+	    return $keys[array_search( $this->step, array_keys( $this->steps ) ) + 1];
+    }
+
+    protected function get_step_link( $step_key )
+    {
+	    return admin_url( 'index.php?page=' . self::PAGE_SLUG . '&step=' . $step_key );
+    }
+
+	protected function get_next_step_link()
+    {
+		return $this->get_step_link( $this->get_next_step_key() );
 	}
 
-	public function enqueue_scripts()
+	protected function enqueue_scripts()
 	{
-	    wp_enqueue_style( 'poc-foundation-setup', POC_FOUNDATION_PLUGIN_URL . 'includes/admin/assets/css/setup-wizard.css', array( 'dashicons', 'install' ) );
+	    wp_enqueue_style( 'poc-foundation-setup', POC_FOUNDATION_PLUGIN_URL . 'includes/admin/assets/css/setup-wizard.css', array( 'dashicons', 'install', 'common' ) );
+		wp_register_script( 'jquery-validation', POC_FOUNDATION_PLUGIN_URL . 'includes/admin/assets/js/jquery.validate.min.js', array( 'jquery' ) );
 		wp_register_script( 'poc-foundation-setup', POC_FOUNDATION_PLUGIN_URL . 'includes/admin/assets/js/setup-wizard.js', array( 'jquery' ) );
 		wp_localize_script(
 			'poc-foundation-setup',
 			'poc_foundation_setup_data',
 			array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
+                'next_step_link' => $this->get_next_step_link()
 			)
 		);
 	}
@@ -151,68 +195,147 @@ class Admin_Setup_Wizard implements Hook
 	public function step_introduction()
 	{
 		?>
-			<h1><?php echo __( 'Welcome to POC Foundation', 'poc-foundation' ); ?></h1>
+            <form method="POST">
+			    <h2><?php echo __( 'Welcome to POC Foundation', 'poc-foundation' ); ?></h2>
+                <p><?php echo __( 'Please complete all the steps to start using POC Foundation plugin' ); ?></p>
+                <?php $this->next_step_buttons(); ?>
+            </form>
 		<?php
 	}
 
     public function step_license()
     {
-        ?>
-        <form method="POST">
-            <table class="form-table">
-                <tbody>
-                    <tr>
-                        <th scope="row">
-                            <label for=""><?php echo __( 'License Key', 'poc-foundation' ); ?></label>
-                        </th>
-                        <td>
-                            <input id="license_key" name="license_key" type="text">
-                            <span class="description"><?php echo __( 'Enter your license key here to start using this plugin.', 'poc-foundation' ); ?></span>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        $license_key = get_option( 'poc_foundation_license_key', '' );
+	    ?>
+            <form method="POST" id="step-license">
+                <table class="form-table">
+                    <tbody>
+                        <tr>
+                            <th scope="row">
+                                <label for=""><?php echo __( 'License Key', 'poc-foundation' ); ?></label>
+                            </th>
+                            <td>
+                                <input id="license_key" name="license_key" type="text" value="<?php echo $license_key; ?>">
+                                <span class="description"><?php echo __( 'Enter your license key here to start using this plugin.', 'poc-foundation' ); ?></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
 
-	        <?php $this->next_step_buttons(); ?>
-        </form>
+                <?php
+                    $this->next_step_buttons( __( 'Check', 'poc-foundation' ) );
+                ?>
+            </form>
         <?php
     }
 
 	public function step_plugins()
 	{
+	    $plugin_manager = new Plugin_Manager();
         ?>
-        <form method="POST">
+        <form method="POST" id="step-plugins">
             <table class="form-table">
                 <tbody>
-                <tr>
-                    <th scope=""></th>
-                </tr>
+                    <?php foreach ( $plugin_manager->get_required_plugins() as $plugin ) : ?>
+                        <?php
+	                        $keys = array();
+
+                            if ( ! $plugin_manager->is_plugin_installed( $plugin['slug'] ) ) {
+                                $keys[] = 'Installation';
+                            }
+                            if ( $plugin_manager->is_plugin_updateable( $plugin['slug'] ) !== false ) {
+                                $keys[] = 'Update';
+                            }
+                            if ( ! $plugin_manager->is_plugin_active( $plugin['slug'] ) ) {
+                                $keys[] = 'Activation';
+                            }
+                            if ( $plugin['slug'] === 'elementor-pro' && ! $plugin_manager->elementor_pro->is_license_valid() ) {
+                                $keys[] = 'Activate license';
+                            }
+                        ?>
+                        <tr data-slug="<?php echo esc_attr( $plugin['slug'] ); ?>">
+                            <th scope="row"><?php echo esc_html( $plugin['name'] ); ?></th>
+                            <td>
+                                <?php if ( in_array( 'Installation', $keys ) ) : ?>
+                                    Required
+                                <?php else : ?>
+                                    <?php echo ( empty( $keys ) ) ? '<span class="dashicons dashicons-yes"></span>' : implode( ' and ', $keys ) . ' required'; ?>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
+
+	        <?php $this->next_step_buttons( 'Install' ); ?>
         </form>
         <?php
 	}
 
     public function step_config()
     {
+        $option = new Option();
         ?>
-        <form method="POST">
+        <form method="POST" id="step-config">
             <table class="form-table">
                 <tbody>
-                <tr>
-                    <th scope="row">
-                        <label for=""><?php echo __( 'License Key', 'poc-foundation' ); ?></label>
-                    </th>
+                <tr valign="top">
+                    <th scope="row">API Key</th>
                     <td>
-                        <input type="text">
-                        <span class="description"><?php echo __( 'Enter your license key here to start using this plugin.', 'poc-foundation' ); ?></span>
+                        <input type="text" name="poc_foundation[api_key]" value="<?php echo $option->get( 'api_key' ); ?>">
+                        <p class="description">You can get API Key from Campaign Management page on citizen.poc.me.</p>
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">UID Prefix</th>
+                    <td>
+                        <input type="text" name="poc_foundation[uid_prefix]" value="<?php echo $option->get( 'uid_prefix' ); ?>">
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">Default Discount</th>
+                    <td>
+                        <input type="number" name="poc_foundation[default_discount]" value="<?php echo $option->get( 'default_discount' ); ?>">
+                    </td>
+                </tr>
+                <tr valign="top">
+                    <th scope="row">Default Revenue Share</th>
+                    <td>
+                        <input type="number" name="poc_foundation[default_revenue_share]" value="<?php echo $option->get( 'default_revenue_share' ); ?>">
                     </td>
                 </tr>
                 </tbody>
             </table>
 
-		    <?php $this->next_step_buttons(); ?>
+		    <?php $this->next_step_buttons( __( 'Save', 'poc-foundation' ) ); ?>
         </form>
         <?php
+    }
+
+    public function step_done()
+    {
+        ?>
+        <h2>Done!</h2>
+        <p>Please enjoy using POC Foundation plugin</p>
+        <?php
+    }
+
+    protected function redirect_to_license_step()
+    {
+        wp_safe_redirect( $this->get_license_step_link() );
+        exit;
+    }
+
+    public function redirect_to_next_step()
+    {
+	    wp_safe_redirect( $this->get_next_step_link() );
+	    exit;
+    }
+
+    protected function is_license_valid()
+    {
+	    $license_data = ( new License() )->get_license_data();
+
+	    return ( isset( $license_data['status'] ) && $license_data['status'] === 'Active' );
     }
 }

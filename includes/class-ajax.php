@@ -2,7 +2,7 @@
 
 namespace POC\Foundation;
 
-use POC\Foundation\Admin\Wizard\Plugin_Manager;
+use POC\Foundation\Admin\Classes\Plugin_Manager;
 use POC\Foundation\License\License;
 
 class AJAX

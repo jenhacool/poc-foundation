@@ -2,7 +2,7 @@
 
 namespace POC\Foundation\License;
 
-class POC_Foundation_License_Server
+class License_Server
 {
 	public function check( $licensekey, $localkey = '' )
 	{
