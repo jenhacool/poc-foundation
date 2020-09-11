@@ -11,8 +11,6 @@ class Lead_Post_Type_Listing implements Hook
 		add_filter( 'manage_poc_foundation_lead_posts_columns', array( $this, 'columns_head' ), 10 );
 
 		add_action( 'manage_poc_foundation_lead_posts_custom_column', array( $this, 'columns_content' ), 10, 2 );
-
-		add_filter( 'views_edit-poc_foundation_lead', array( $this, 'custom_list_table' ) );
 	}
 
 	public function columns_head( $defaults )
@@ -47,12 +45,5 @@ class Lead_Post_Type_Listing implements Hook
 		}
 
 		echo $content;
-	}
-
-	public function custom_list_table()
-	{
-		global $wp_list_table;
-		$list_table = new List_Table();
-		$wp_list_table = $list_table;
 	}
 }
