@@ -1,8 +1,8 @@
 <?php
 
-use POC\Foundation\Admin\Admin_Notice;
+use POC\Foundation\Admin\Hooks\Admin_Notice;
 
-class Test_Class_Admin_Asset extends \WP_UnitTestCase
+class Test_Class_Admin_Notice extends \WP_UnitTestCase
 {
 	public $instance;
 

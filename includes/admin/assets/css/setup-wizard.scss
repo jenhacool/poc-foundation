@@ -4,6 +4,11 @@ body {
   background: #f1f1f1;
   padding: 0;
 
+  h1 {
+    border-bottom: none;
+    text-align: center;
+  }
+
   .setup-steps {
     padding: 0 0 24px;
     margin: 0;
@@ -117,15 +122,33 @@ body {
         select, input {
           width: 100%;
           box-sizing: border-box;
+
+          &.error {
+            border-color: red;
+          }
+        }
+
+        label.error {
+          margin-top: 0.25rem;
+          display: block;
+          color: red;
         }
 
         .description {
           line-height: 1.5em;
           display: block;
           margin-top: 0.25em;
+          margin-bottom: 0;
           color: #999;
           font-style: italic;
         }
+      }
+    }
+
+    #step-plugins {
+      span.spinner {
+        float: left;
+        margin: 0;
       }
     }
   }

@@ -2,7 +2,7 @@
 
 namespace POC\Foundation\Modules\Affiliate\Utilities;
 
-use POC\Foundation\API;
+use POC\Foundation\Classes\POC_API;
 
 trait Check_Coupon
 {
@@ -16,7 +16,7 @@ trait Check_Coupon
 			return true;
 		}
 
-		$api = new API();
+		$api = new POC_API();
 
 		$data = $api->send_request( "user/$coupon_code" );
 

@@ -2,7 +2,7 @@
 
 namespace POC\Foundation\Modules\LGS\Hooks\Elementor\FormActions;
 
-use POC\Foundation\API;
+use POC\Foundation\Classes\POC_API;
 
 class Form_Action extends \ElementorPro\Modules\Forms\Classes\Action_Base
 {
@@ -10,7 +10,7 @@ class Form_Action extends \ElementorPro\Modules\Forms\Classes\Action_Base
 
 	public function __construct()
 	{
-		$this->api = new API();
+		$this->api = new POC_API();
 	}
 
 	public function get_name()
@@ -70,9 +70,6 @@ class Form_Action extends \ElementorPro\Modules\Forms\Classes\Action_Base
 	public function run( $record, $ajax_handler )
 	{
 		$this->save_to_db( $record );
-
-		$ajax_handler->add_success_message( __( 'Success', 'poc-foundation' ) );
-		return;
 
 		$raw_fields = $record->get( 'fields' );
 

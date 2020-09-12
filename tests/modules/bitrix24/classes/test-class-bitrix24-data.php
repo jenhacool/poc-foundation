@@ -87,22 +87,6 @@ class Test_Class_Bitrix24_Data extends \WP_UnitTestCase
 		);
 	}
 
-	public function test_get_deal_categories()
-	{
-		$mock = $this->get_mock();
-		$mock->shouldReceive( 'send_request' )->once()->with( 'crm.dealcategory.list', 'POST' )->andReturn( true );
-
-		$this->assertTrue( $mock->get_deal_categories() );
-	}
-
-	public function test_get_statuses()
-	{
-		$mock = $this->get_mock();
-		$mock->shouldReceive( 'send_request' )->once()->with( 'crm.status.list', 'POST' )->andReturn( true );
-
-		$this->assertTrue( $mock->get_statuses() );
-	}
-
 	public function get_mock()
 	{
 		return m::mock( Bitrix24_Data::class )->makePartial()->shouldAllowMockingProtectedMethods();

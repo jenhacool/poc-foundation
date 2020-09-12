@@ -3,14 +3,12 @@
 /**
  * Plugin Name: Poc Foundation
  * Plugin URI: https://poc.foundation/
- * Description: POC Referral system for Woocommerce
+ * Description: POC Referral System
  * Version: 3.9.2
  * Author: POC
  * Author URI: https://poc.foundation
  * Text Domain: poc.foundation
  * Domain Path: /i18n/languages/
- *
- * @package Poc.foundation
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -36,8 +34,6 @@ register_deactivation_hook( POC_FOUNDATION_PLUGIN_FILE, array( Plugin::class, 'd
 
 /**
  * Get POC_Foundation instance
- *
- * @return Plugin
  */
 function poc_foundation() {
 	return Plugin::instance();

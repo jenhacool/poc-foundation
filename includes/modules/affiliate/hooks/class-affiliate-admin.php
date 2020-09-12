@@ -20,6 +20,8 @@ class Affiliate_Admin implements Hook
         add_action( "wp_ajax_take_data_user", array( $this, 'so_wp_ajax_function' ) );
 
         add_action( "wp_ajax_nopriv_take_data_user", array( $this, 'so_wp_ajax_function' ) );
+
+
 	}
 
 	public function settings_tab( $tabs )
@@ -60,13 +62,27 @@ class Affiliate_Admin implements Hook
 
     public function enqueue_scripts()
     {
-        wp_enqueue_script( 'send_token_ajax', POC_FOUNDATION_PLUGIN_URL . 'includes/modules/affiliate/assets/js/pay_the_reward.js', array( 'jquery' ) );
+        $page = $_GET['page'];
+        if ( $page == 'poc-foundation-reward' ) {
+            wp_enqueue_script( 'send_token_ajax', POC_FOUNDATION_PLUGIN_URL . 'includes/modules/affiliate/assets/js/pay_the_reward.js', array( 'jquery' ) );
 
-        wp_localize_script( 'send_token_ajax', 'send_token_ajax_data',
-            array(
-                'ajax_url' => admin_url( 'admin-ajax.php' )
-            )
-        );
+            wp_localize_script( 'send_token_ajax', 'send_token_ajax_data',
+                array(
+                    'ajax_url' => admin_url( 'admin-ajax.php' )
+                )
+            );
+        }
+
+        if ( $page == 'poc-foundation' ) {
+            wp_enqueue_script( 'setting_poc_foundation', POC_FOUNDATION_PLUGIN_URL . 'includes/modules/affiliate/assets/js/setting_poc_foundation.js', array( 'jquery' ) );
+
+            wp_localize_script( 'setting_poc_foundation', 'setting_poc_foundation_data',
+                array(
+                    'ajax_url' => admin_url( 'admin-ajax.php' )
+                )
+            );
+        }
+
     }
 
     function so_wp_ajax_function()

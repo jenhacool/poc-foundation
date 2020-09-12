@@ -3,11 +3,9 @@
 namespace POC\Foundation;
 
 use POC\Foundation\License\License;
-use POC\Foundation\Modules\Affiliate\Affiliate;
-use POC\Foundation\Modules\LGS\LGS;
-use POC\Foundation\PostType\Lead_Post_Type;
-use POC\Foundation\Utilities\SingletonTrait;
 use POC\Foundation\Admin\Admin;
+use POC\Foundation\Classes\AJAX;
+use POC\Foundation\Classes\Module_Manager;
 
 class Plugin
 {
@@ -41,17 +39,14 @@ class Plugin
 
         new AJAX();
 
-        $this->api = new API();
-
 		if ( $this->is_license_valid() ) {
-			Package_Manager::load_packages();
 			Module_Manager::init_modules();
 		}
     }
 
     protected function is_license_valid()
     {
-    	return true;
+        return true;
     	return ( new License() )->check_license();
     }
 
