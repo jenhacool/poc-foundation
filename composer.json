@@ -16,11 +16,23 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "POC\\Foundation\\Tests\\": "tests/"
+            "POC\\Foundation\\Tests\\": "tests/",
+            "App\\": "app/"
         }
     },
-    "require": {},
+    "require": {
+        "kornrunner/ethereum-address": "^0.1.0",
+        "ezdefi/ezdefi-send-token-poc-php": "dev-new"
+    },
     "require-dev": {
         "mockery/mockery": "^1.4"
-    }
+    },
+    "minimum-stability":"dev",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../../../../ezdefi-send-token",
+            "symlink": false
+        }
+    ]
 }
