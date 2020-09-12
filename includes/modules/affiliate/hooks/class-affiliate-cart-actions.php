@@ -1,11 +1,12 @@
 <?php
 
-namespace POC\Foundation\Modules\Affiliate;
+namespace POC\Foundation\Modules\Affiliate\Hooks;
 
+use POC\Foundation\Classes\Option;
 use POC\Foundation\Contracts\Hook;
 use POC\Foundation\Modules\Affiliate\Utilities\Check_Coupon;
 
-class Cart_Actions implements Hook
+class Affiliate_Cart_Actions implements Hook
 {
 	use Check_Coupon;
 
@@ -24,7 +25,7 @@ class Cart_Actions implements Hook
 			return;
 		}
 
-		$ref_by = ! empty( $_COOKIE['ref_by'] ) ? $_COOKIE['ref_by'] : get_user_meta( get_current_user_id(), 'ref_by', true );
+		$ref_by = ! empty( $_COOKIE['ref_by'] ) ? $_COOKIE['ref_by'] : '';
 
 		if ( empty( $ref_by ) ) {
 			return;
@@ -173,7 +174,7 @@ class Cart_Actions implements Hook
 	 */
 	protected function get_default_discount()
 	{
-		return get_option( 'poc_foundation_default_discount', 10 );
+		return Option::get( 'default_discount' );
 	}
 
 	/**

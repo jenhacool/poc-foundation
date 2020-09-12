@@ -1,14 +1,14 @@
 <?php
 
-use POC\Foundation\Modules\Affiliate\Product_Options;
+use POC\Foundation\Modules\Affiliate\Hooks\Affiliate_Product_Options;
 
-class Test_Class_Product_Options extends \WP_UnitTestCase
+class Test_Class_Affiliate_Product_Options extends \WP_UnitTestCase
 {
 	public $instance;
 
 	public function setUp()
 	{
-		$this->instance = new Product_Options();
+		$this->instance = new Affiliate_Product_Options();
 	}
 
 	public function test_hooks()

@@ -1,6 +1,6 @@
 <?php
 
-namespace POC\Foundation;
+namespace POC\Foundation\Classes;
 
 use POC\Foundation\Modules\Affiliate\Affiliate;
 use POC\Foundation\Modules\LGS\LGS;

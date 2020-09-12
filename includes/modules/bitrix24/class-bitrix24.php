@@ -2,7 +2,7 @@
 
 namespace POC\Foundation\Modules\Bitrix24;
 
-use POC\Foundation\Contracts\Manager;
+use POC\Foundation\Abstracts\Manager;
 use POC\Foundation\Contracts\Module;
 use POC\Foundation\Modules\Bitrix24\Hooks\Bitrix24_AJAX;
 use POC\Foundation\Modules\Bitrix24\Hooks\Bitrix24_Admin;

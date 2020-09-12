@@ -1,9 +1,9 @@
 <?php
 
-use POC\Foundation\AJAX;
+use POC\Foundation\Classes\AJAX;
 use POC\Foundation\License\License;
-use POC\Foundation\Plugin_Manager;
-use POC\Foundation\Admin\ElementorPro\Elementor_Pro;
+use POC\Foundation\Admin\Classes\Plugin_Manager;
+use POC\Foundation\Admin\Classes\Elementor_Pro;
 use Mockery as m;
 
 class Test_Class_AJAX extends \WP_Ajax_UnitTestCase

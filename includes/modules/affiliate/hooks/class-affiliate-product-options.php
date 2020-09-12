@@ -1,10 +1,10 @@
 <?php
 
-namespace POC\Foundation\Modules\Affiliate;
+namespace POC\Foundation\Modules\Affiliate\Hooks;
 
 use POC\Foundation\Contracts\Hook;
 
-class Product_Options implements Hook
+class Affiliate_Product_Options implements Hook
 {
 	public function hooks()
 	{

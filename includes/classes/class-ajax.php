@@ -1,6 +1,6 @@
 <?php
 
-namespace POC\Foundation;
+namespace POC\Foundation\Classes;
 
 use POC\Foundation\Admin\Classes\Plugin_Manager;
 use POC\Foundation\License\License;

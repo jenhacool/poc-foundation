@@ -2,10 +2,11 @@
 
 namespace POC\Foundation\Modules\Affiliate\Hooks;
 
+use POC\Foundation\Classes\POC_API;
 use POC\Foundation\Contracts\Hook;
 use POC\Foundation\Modules\Affiliate\Utilities\Check_Coupon;
 
-class Order_Actions implements Hook
+class Affiliate_Order_Actions implements Hook
 {
 	use Check_Coupon;
 
@@ -278,7 +279,7 @@ class Order_Actions implements Hook
 
 	protected function get_api_wrapper()
 	{
-		return poc_foundation()->api;
+		return new POC_API();
 	}
 
 	/**

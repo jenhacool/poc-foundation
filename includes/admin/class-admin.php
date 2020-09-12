@@ -2,8 +2,8 @@
 
 namespace POC\Foundation\Admin;
 
+use POC\Foundation\Abstracts\Manager;
 use POC\Foundation\Admin\Hooks\Admin_Setup_Wizard;
-use POC\Foundation\Contracts\Manager;
 use POC\Foundation\Admin\Hooks\Admin_Init;
 use POC\Foundation\Admin\Hooks\Admin_Menu;
 use POC\Foundation\Admin\Hooks\Admin_Settings;

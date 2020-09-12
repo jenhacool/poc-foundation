@@ -1,9 +1,9 @@
 <?php
 
-use POC\Foundation\Modules\Affiliate\Cart_Actions;
+use POC\Foundation\Modules\Affiliate\Hooks\Affiliate_Cart_Actions;
 use Mockery as m;
 
-class Test_Class_Cart_Actions extends \WP_UnitTestCase
+class Test_Class_Affiliate_Cart_Actions extends \WP_UnitTestCase
 {
 	public $instance;
 
@@ -11,7 +11,7 @@ class Test_Class_Cart_Actions extends \WP_UnitTestCase
 	{
 		parent::setUp();
 
-		$this->instance = new Cart_Actions();
+		$this->instance = new Affiliate_Cart_Actions();
 	}
 
 	public function tearDown()
@@ -58,7 +58,7 @@ class Test_Class_Cart_Actions extends \WP_UnitTestCase
 		$cart_mock->shouldReceive( 'get_applied_coupons' )->andReturn( array() );
 		$cart_mock->shouldReceive( 'add_discount' )->once()->with( 'jenhacool' )->andReturn( true );
 
-		$mock = m::mock( Cart_Actions::class )->makePartial()->shouldAllowMockingProtectedMethods();
+		$mock = m::mock( Affiliate_Cart_Actions::class )->makePartial()->shouldAllowMockingProtectedMethods();
 		$mock->shouldReceive( 'get_cart' )->andReturn( $cart_mock );
 		$mock->shouldReceive( 'is_coupon_valid' )->once()->with( 'jenhacool' )->andReturn( true );
 
@@ -81,7 +81,7 @@ class Test_Class_Cart_Actions extends \WP_UnitTestCase
 		$cart_mock->shouldReceive( 'get_applied_coupons' )->andReturn( array() );
 		$cart_mock->shouldReceive( 'add_discount' )->once()->with( 'jenhacool' )->andReturn();
 
-		$mock = m::mock( Cart_Actions::class )->makePartial()->shouldAllowMockingProtectedMethods();
+		$mock = m::mock( Affiliate_Cart_Actions::class )->makePartial()->shouldAllowMockingProtectedMethods();
 		$mock->shouldReceive( 'get_cart' )->andReturn( $cart_mock );
 		$mock->shouldReceive( 'is_coupon_valid' )->once()->with( 'jenhacool' )->andReturn( true );
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace POC\Foundation\Contracts;
+namespace POC\Foundation\Abstracts;
 
 abstract class Manager
 {
