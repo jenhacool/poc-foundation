@@ -30,7 +30,7 @@
                     $('.ui-dialog-titlebar-close').addClass('ui-button');
                 },
                 close: function () {
-                    poc_foundation_bitrix24.toggle();
+                    poc_foundation_bitrix24.resetToggle();
                     poc_foundation_bitrix24.clearLog();
                     poc_foundation_bitrix24.clearItems();
                     poc_foundation_bitrix24.resetCount();
@@ -40,10 +40,14 @@
 
             $('#wpbody').on('click', '#doaction', function(e) {
                 var action = $('#bulk-action-selector-top').val();
-                poc_foundation_bitrix24.setQueuedItems();
                 if(action === 'send_bitrix24') {
                     e.preventDefault();
+                }
+                poc_foundation_bitrix24.setQueuedItems();
+                if(poc_foundation_bitrix24.items.queued.length > 0) {
                     poc_foundation_bitrix24.showDialog();
+                } else {
+                    alert('Please select at least one lead');
                 }
             });
 
@@ -87,7 +91,10 @@
         toggle: function() {
             $('#poc_foundation_bitrix24').find('.poc_foundation_bitrix24_form').toggle();
             $('#poc_foundation_bitrix24').find('.poc_foundation_bitrix24_status').toggle();
-
+        },
+        resetToggle: function() {
+            $('#poc_foundation_bitrix24').find('.poc_foundation_bitrix24_form').show();
+            $('#poc_foundation_bitrix24').find('.poc_foundation_bitrix24_status').hide();
         },
         toggleButton: function() {
             $('#poc_foundation_bitrix24 .stop-button').toggle();

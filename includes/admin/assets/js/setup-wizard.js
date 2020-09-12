@@ -45,6 +45,7 @@
                     } else {
                         alert('License key is not valid. Please try again.');
                         $('input#license_key').prop('disabled', false);
+                        $('input[type="submit"]').prop('disabled', false);
                     }
                 }
             })

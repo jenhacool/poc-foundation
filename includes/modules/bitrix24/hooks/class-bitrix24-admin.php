@@ -14,21 +14,14 @@ class Bitrix24_Admin implements Hook
 	{
 		add_filter( 'poc_foundation_admin_settings_tabs', array( $this, 'settings_tab' ) );
 
-		add_action( 'admin_footer', array( $this, 'bitrix24_dialog' ) );
-
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		if ( $this->is_lead_listing_page() ) {
+			add_action( 'admin_footer', array( $this, 'bitrix24_dialog' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		}
 	}
 
 	public function bitrix24_dialog()
 	{
-	    global $pagenow;
-
-		$post_type = isset( $_GET['post_type'] ) ? $_GET['post_type'] : '';
-
-		if ( ! is_admin() || $pagenow != 'edit.php' || $post_type != 'poc_foundation_lead' ) {
-			return;
-		}
-
 		$stages = ( new Bitrix24_Data() )->get_stages();
 
 		include_once dirname( dirname( __FILE__ ) ) . '/views/html-bitrix24-dialog.php';
@@ -68,5 +61,14 @@ class Bitrix24_Admin implements Hook
         $option = new Option();
 
 	    include_once dirname( dirname( __FILE__ ) ) . '/views/html-bitrix24-settings-tab.php';
+    }
+
+    protected function is_lead_listing_page()
+    {
+    	global $pagenow;
+
+	    $post_type = isset( $_GET['post_type'] ) ? $_GET['post_type'] : '';
+
+    	return ( is_admin() && $pagenow === 'edit.php' && $post_type === 'poc_foundation_lead' );
     }
 }
