@@ -1,4 +1,5 @@
 <div class="wrap">
+    <h2><?php echo __( 'POC Foundation Settings', 'poc-foundation' ); ?></h2>
 	<form action="" method="post">
 		<?php if ( ! empty( $tabs ) ) : ?>
             <?php $current_tab_id = isset( $_GET['tab'] ) ? $_GET['tab'] : $tabs[0]['id']; ?>
