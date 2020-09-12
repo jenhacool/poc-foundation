@@ -18,9 +18,12 @@ class Admin_Settings implements Hook
 		if ( ! isset( $_POST['poc_foundation'] ) || empty( $_POST['poc_foundation'] ) ) {
 			return;
 		}
+
+		include_once ABSPATH . 'wp-admin/includes/template.php';
+
 		do_action( 'poc_foundation_validate_posted_data', $_POST['poc_foundation'] );
 
-		if ( count( get_settings_errors( 'poc_foundation' ) ) > 0 ) {
+		if ( count( get_settings_errors( 'poc_foundation_settings_errors' ) ) > 0 ) {
 			return;
 		}
 
@@ -33,5 +36,7 @@ class Admin_Settings implements Hook
 		$new_settings = array_merge( $settings, $_POST['poc_foundation'] );
 
 		update_option( self::SETTING_KEY, serialize( $new_settings ) );
+
+		add_settings_error( 'poc_foundation_notices', '', __( 'Settings saved.', 'poc-foundation' ), 'success' );
 	}
 }

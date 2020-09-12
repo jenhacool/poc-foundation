@@ -10,11 +10,7 @@ class Settings_Page implements Admin_Page
 			return;
 		}
 
-		if ( isset( $_GET['settings-updated'] ) ) {
-			add_settings_error( 'poc_foundation_messages', 'poc_foundation_message', __( 'Settings Saved', 'poc_foundation' ), 'updated' );
-		}
-
-		settings_errors( 'poc_foundation_messages' );
+		settings_errors();
 
 		$tabs = self::get_tabs();
 
