@@ -35,7 +35,7 @@ class Admin_Init implements Hook
 	protected function redirect_to_wizard_page()
 	{
 		delete_transient( 'poc_foundation_activation_redirect' );
-		wp_safe_redirect( admin_url( 'admin.php?page=poc-foundation-getting-started' ) );
+		wp_safe_redirect( admin_url( 'index.php?page=poc-foundation-setup' ) );
 		exit;
 	}
 
