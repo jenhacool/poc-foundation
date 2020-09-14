@@ -28,22 +28,30 @@
         <tr valign="top">
             <th scope="row">Referral rate</th>
             <td>
-                <p>Add tax rates for referral rate. Enter a percentage.</p>
+                <p id="title_add_rate">Add tax rates for referral rate. Enter a percentage.</p>
                 <table id="edd_tax_rates" >
-                    <td class="edd_tax_rate">
-                        <i>Floor 1 :</i>
-                        <input type="number" id="tax_rates[0][rate]" min="0" max="10000" id="ref_rates_1" name="poc_foundation[ref_rates][0]" value="<?php echo ($option->get( 'ref_rates' )[0]); ?>">
-                    </td>
-                    <td>
-                        <span class="edd_remove_tax_rate button-secondary">Remove Rate</span>
-                    </td>
+                    <tbody>
+                    <?php if(!empty($option->get( 'ref_rates' ))) { ?>
+                        <?php foreach ($option->get( 'ref_rates' ) as $key => $value) { ?>
+                            <tr>
+                                <td class="edd_tax_rate">
+                                    <i>Floor <?php echo $key + 1 ?> :</i>
+                                    <input type="number" id="poc_foundation[ref_rates][<?php echo $key ?>]" min="0" max="100" required  name="poc_foundation[ref_rates][<?php echo $key ?>]" value="<?php echo $value; ?>">
+                                </td>
+                                <td>
+                                    <span class="edd_remove_tax_rate button-secondary">Remove Rate</span>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                    <?php } ?>
+                    </tbody>
                 </table>
                 <p>
                     <span class="button-secondary" id="edd_add_tax_rate">Add Tax Rate</span>
                 </p>
             </td>
-
         </tr>
 
     </tbody>
 </table>
+

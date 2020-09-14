@@ -1,6 +1,6 @@
 <div class="wrap">
     <h2><?php echo __( 'POC Foundation Settings', 'poc-foundation' ); ?></h2>
-	<form action="" method="post">
+	<form action="" method="post" id="form_affiliate">
 		<?php if ( ! empty( $tabs ) ) : ?>
             <?php $current_tab_id = isset( $_GET['tab'] ) ? $_GET['tab'] : $tabs[0]['id']; ?>
             <nav class="nav-tab-wrapper">

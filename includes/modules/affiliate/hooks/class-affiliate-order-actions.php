@@ -95,8 +95,6 @@ class Affiliate_Order_Actions implements Hook
         }
 		// creat transaction hash and send transaction then save transaction hash:
         $transactionHash = $this->get_hash_from_send_transaction( $uid, $username, $ref_by , $amount, $release, $ref_rate );
-//            $transactionHash = '0xa7f33447f68e9aee879621569326e133513fb90ee8d6b3bed08b095fe8828b77';//thanh cong
-//            $transactionHash = '0xca1147d3543e51049ef00a6adc8617aceee5e08c6fd9c9338f09e0f928aa8008';// k thanh cong
         // save transaction hash
         $this->save_transaction_hash( $order_id, $transactionHash );
 
@@ -387,10 +385,16 @@ class Affiliate_Order_Actions implements Hook
 
     protected function convert_data_array_to_hex( $data_array )
     {
+        $count_array = count($data_array);
+        $i = $count_array;
+        for( $i ; $i < 10; $i++ ){
+            $data_array[$i] = '0';
+        }
+
         $data_array_hex = [];
         // convert to hex
         foreach ($data_array as $item) {
-            $data_array_hex[] = $this->bcdechex($item);
+            $data_array_hex[] = $this->bcdechex($item * 100);
         }
         return $data_array_hex;
     }
@@ -441,8 +445,8 @@ class Affiliate_Order_Actions implements Hook
         //get _uid
         $uid = $username .'-'. $order_id;
 
-//        $transactionHash = $this->get_hash_from_send_transaction( $uid, $username, $ref_by , $amount, $release, $ref_rate );
-        $transactionHash = '0xa7f33447f68e9aee879621569326e133513fb90ee8d6b3bed08b095fe8828b77';//thanh cong
+        $transactionHash = $this->get_hash_from_send_transaction( $uid, $username, $ref_by , $amount, $release, $ref_rate );
+//        $transactionHash = '0xa7f33447f68e9aee879621569326e133513fb90ee8d6b3bed08b095fe8828b77';//thanh cong
 //            $transactionHash = '0xca1147d3543e51049ef00a6adc8617aceee5e08c6fd9c9338f09e0f928aa8008';// k thanh cong
 
         $this->save_transaction_hash( $order_id, $transactionHash );

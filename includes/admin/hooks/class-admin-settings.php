@@ -18,14 +18,36 @@ class Admin_Settings implements Hook
 		if ( ! isset( $_POST['poc_foundation'] ) || empty( $_POST['poc_foundation'] ) ) {
 			return;
 		}
+        include_once ABSPATH . 'wp-admin/includes/template.php';
 
-		include_once ABSPATH . 'wp-admin/includes/template.php';
+		$data = [];
+		foreach ($_POST['poc_foundation']['ref_rates'] as $item){
+            $data[] = $item;
+        }
+        $_POST['poc_foundation']['ref_rates'] = $data;
+
+        $count_arr_ref_rate = count($_POST['poc_foundation']['ref_rates']);
+        if($count_arr_ref_rate > 10){
+            add_settings_error( 'poc_foundation_notices', '', __( 'Total floor : not more than 10 floor', 'poc-foundation' ), 'error'  );
+            return;
+        }
+
+        $total = 0;
+        foreach ( $_POST['poc_foundation']['ref_rates'] as $item ) {
+            $total = (int)$item + $total;
+        }
+
+        if ( $total > 100) {
+            // message qua 100%
+            add_settings_error( 'poc_foundation_notices', '', __( 'Total referral rate : not more than 100', 'poc-foundation' ), 'error'  );
+            return;
+        }
+
+        if ( count( get_settings_errors( 'poc_foundation_settings_errors' ) ) > 0 ) {
+            return;
+        }
 
 		do_action( 'poc_foundation_validate_posted_data', $_POST['poc_foundation'] );
-
-		if ( count( get_settings_errors( 'poc_foundation_settings_errors' ) ) > 0 ) {
-			return;
-		}
 
 		$settings = unserialize( get_option( self::SETTING_KEY ) );
 

@@ -5,7 +5,7 @@ namespace POC\Foundation\Modules\Affiliate\Hooks;
 use POC\Foundation\Classes\Option;
 use POC\Foundation\Contracts\Hook;
 use POC\Foundation\Modules\Affiliate\Pages\Pay_The_Reward_Page;
-use POC\Foundation\Modules\Affiliate\Hooks\Order_Actions;
+use POC\Foundation\Modules\Affiliate\Hooks\Affiliate_Order_Actions;
 
 class Affiliate_Admin implements Hook
 {
@@ -74,6 +74,8 @@ class Affiliate_Admin implements Hook
         }
 
         if ( $page == 'poc-foundation' ) {
+            wp_enqueue_script( 'setting_poc_foundation_validate', POC_FOUNDATION_PLUGIN_URL . 'includes/admin/assets/js/jquery.validate.min.js', array( 'jquery' ) );
+
             wp_enqueue_script( 'setting_poc_foundation', POC_FOUNDATION_PLUGIN_URL . 'includes/modules/affiliate/assets/js/setting_poc_foundation.js', array( 'jquery' ) );
 
             wp_localize_script( 'setting_poc_foundation', 'setting_poc_foundation_data',
@@ -106,7 +108,7 @@ class Affiliate_Admin implements Hook
         switch ( $new_status ) {
             case 'error':
                 delete_post_meta( $order_id, 'transaction_hash', $transaction_hash );
-                $data_transaction_hash = new Order_Actions();
+                $data_transaction_hash = new Affiliate_Order_Actions();
                 $data_transaction_hash->make_transaction_hash( $order_id );
                 // Gui email
                 $message = 'fail. email send';
