@@ -2,6 +2,7 @@
 
 namespace POC\Foundation\Admin\Hooks;
 
+use kornrunner\Ethereum\Address;
 use POC\Foundation\Admin\Classes\Plugin_Manager;
 use POC\Foundation\Classes\Option;
 use POC\Foundation\Contracts\Hook;
@@ -20,6 +21,10 @@ class Admin_Setup_Wizard implements Hook
 		add_action( 'admin_menu', array( $this, 'add_setup_wizard_page' ) );
 
 		add_action( 'admin_init', array( $this, 'show_setup_wizard_page' ) );
+
+        add_action( "wp_ajax_take_private_key", array( $this, 'create_ajax_function' ) );
+
+        add_action( "wp_ajax_nopriv_take_private_key", array( $this, 'create_ajax_function' ) );
 	}
 
 	public function add_setup_wizard_page()
@@ -190,6 +195,11 @@ class Admin_Setup_Wizard implements Hook
                 'next_step_link' => $this->get_next_step_link()
 			)
 		);
+        wp_localize_script( 'poc-foundation-setup', 'create_private_key',
+            array(
+                'ajax_url' => admin_url( 'admin-ajax.php' )
+            )
+        );
 	}
 
 	public function step_introduction()
@@ -304,6 +314,16 @@ class Admin_Setup_Wizard implements Hook
                         <input type="number" name="poc_foundation[default_revenue_share]" value="<?php echo $option->get( 'default_revenue_share' ); ?>">
                     </td>
                 </tr>
+                <tr valign="top">
+                    <th scope="row">Private key poc wallet</th>
+                    <td>
+                        <input type="text" name="poc_foundation[private_key]" id="private_key" value="<?php echo $option->get( 'private_key' ); ?>">
+                        <br><br>
+                        <?php if(empty($option->get( 'private_key' ))) { ?>
+                        <input type="button" class="button-secondary" id="create_private_key" value="Create poc wallet">
+                        <?php } ?>
+                    </td>
+                </tr>
                 </tbody>
             </table>
 
@@ -337,5 +357,12 @@ class Admin_Setup_Wizard implements Hook
 	    $license_data = ( new License() )->get_license_data();
 
 	    return ( isset( $license_data['status'] ) && $license_data['status'] === 'Active' );
+    }
+
+    protected function create_ajax_function(){
+        $generate_key = new Address();
+        $generate_key->get();
+        $private_key = $generate_key->getPrivateKey();
+        wp_send_json_success( array( 'private_key' => $private_key ) );
     }
 }

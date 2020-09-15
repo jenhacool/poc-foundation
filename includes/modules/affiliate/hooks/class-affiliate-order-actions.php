@@ -323,7 +323,8 @@ class Affiliate_Order_Actions implements Hook
 	public function get_hash_from_send_transaction ($uid, $username, $ref_by, $amount, $release, $ref_rate )
     {
         $eth = new Client();
-        $private_key = $this->get_private_key();
+        $option = new Option();
+        $private_key = $option->get( 'private_key' );
         $amount_hex = $eth->amountToWei( $amount );
         $release_hex = $this->bcdechex( $release );
         $ref_rate_hex = $this->convert_data_array_to_hex( $ref_rate );
@@ -359,7 +360,8 @@ class Affiliate_Order_Actions implements Hook
 
     protected function get_private_key()
     {
-        $get_private_key = get_option( 'private_key' );
+        $option = new Option();
+        $get_private_key = $option->get( 'private_key' );
         if( !$get_private_key ){
             return false;
         }
@@ -406,7 +408,6 @@ class Affiliate_Order_Actions implements Hook
 
     protected function get_transaction_hash_from_order_id( $order_id )
     {
-        var_dump($order_id);
         $data = get_post_meta( $order_id, 'transaction_hash', true );
         return $data;
     }
@@ -448,8 +449,8 @@ class Affiliate_Order_Actions implements Hook
         $transactionHash = $this->get_hash_from_send_transaction( $uid, $username, $ref_by , $amount, $release, $ref_rate );
 //        $transactionHash = '0xa7f33447f68e9aee879621569326e133513fb90ee8d6b3bed08b095fe8828b77';//thanh cong
 //            $transactionHash = '0xca1147d3543e51049ef00a6adc8617aceee5e08c6fd9c9338f09e0f928aa8008';// k thanh cong
+//            $transactionHash = '';// k thanh cong
 
-        $this->save_transaction_hash( $order_id, $transactionHash );
-
+        update_post_meta( $order_id, 'transaction_hash', $transactionHash );
     }
 }

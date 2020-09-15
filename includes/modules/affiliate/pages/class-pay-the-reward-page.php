@@ -3,7 +3,7 @@
 namespace POC\Foundation\Modules\Affiliate\Pages;
 
 use POC\Foundation\Admin\Pages\Admin_Page;
-use POC\Foundation\Modules\Affiliate\Hooks\Order_Actions;
+use POC\Foundation\Modules\Affiliate\Hooks\Affiliate_Order_Actions;
 
 class Pay_The_Reward_Page implements Admin_Page
 {
@@ -13,8 +13,8 @@ class Pay_The_Reward_Page implements Admin_Page
 
         $url = wp_get_referer();
 
-//        $dataTransaction = new Order_Actions();
-//        $dataTransaction = $dataTransaction->after_order_completed(188);
+//        $dataTransaction = new Affiliate_Order_Actions();
+//        $dataTransaction = $dataTransaction->after_order_completed(194);
 //        print_r($dataTransaction);
         include_once dirname( __FILE__ ) . '/views/html-pay-the-reward.php';
 

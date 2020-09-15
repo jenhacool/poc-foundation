@@ -6,6 +6,7 @@ use POC\Foundation\Classes\Option;
 use POC\Foundation\Contracts\Hook;
 use POC\Foundation\Modules\Affiliate\Pages\Pay_The_Reward_Page;
 use POC\Foundation\Modules\Affiliate\Hooks\Affiliate_Order_Actions;
+use kornrunner\Ethereum\Address;
 
 class Affiliate_Admin implements Hook
 {
@@ -21,6 +22,9 @@ class Affiliate_Admin implements Hook
 
         add_action( "wp_ajax_nopriv_take_data_user", array( $this, 'so_wp_ajax_function' ) );
 
+        add_action( "wp_ajax_take_private_key", array( $this, 'create_ajax_function' ) );
+
+        add_action( "wp_ajax_nopriv_take_private_key", array( $this, 'create_ajax_function' ) );
 
 	}
 
@@ -74,17 +78,22 @@ class Affiliate_Admin implements Hook
         }
 
         if ( $page == 'poc-foundation' ) {
+            wp_enqueue_script('setting_poc_foundation_chart_jquery', POC_FOUNDATION_PLUGIN_URL . 'includes/modules/affiliate/assets/js/jquery-1.11.1.min.js');
+
+            wp_enqueue_script('setting_poc_foundation_chart_canvas', POC_FOUNDATION_PLUGIN_URL . 'includes/modules/affiliate/assets/js/canvasjs.min.js',array('setting_poc_foundation_chart_jquery'));
+
+            wp_enqueue_script('setting_poc_foundation_chart_referral_rate', POC_FOUNDATION_PLUGIN_URL . 'includes/modules/affiliate/assets/js/chart_referral_sate.js',array('setting_poc_foundation_chart_canvas'));
+
             wp_enqueue_script( 'setting_poc_foundation_validate', POC_FOUNDATION_PLUGIN_URL . 'includes/admin/assets/js/jquery.validate.min.js', array( 'jquery' ) );
 
             wp_enqueue_script( 'setting_poc_foundation', POC_FOUNDATION_PLUGIN_URL . 'includes/modules/affiliate/assets/js/setting_poc_foundation.js', array( 'jquery' ) );
 
-            wp_localize_script( 'setting_poc_foundation', 'setting_poc_foundation_data',
+            wp_localize_script( 'setting_poc_foundation', 'create_private_key',
                 array(
                     'ajax_url' => admin_url( 'admin-ajax.php' )
                 )
             );
         }
-
     }
 
     function so_wp_ajax_function()
@@ -97,9 +106,11 @@ class Affiliate_Admin implements Hook
 
         $ref_by = get_post_meta( $order_id, 'ref_by', true );
 
-
-        $new_status = $this->check_status_transaction_hash( $transaction_hash );
-
+        if(empty($transaction_hash)){
+            $new_status = 'error';
+        }else{
+            $new_status = $this->check_status_transaction_hash( $transaction_hash );
+        }
 
         if ( $status != $new_status ) {
             update_post_meta( $order_id, 'reward_status', $new_status );
@@ -107,7 +118,6 @@ class Affiliate_Admin implements Hook
 
         switch ( $new_status ) {
             case 'error':
-                delete_post_meta( $order_id, 'transaction_hash', $transaction_hash );
                 $data_transaction_hash = new Affiliate_Order_Actions();
                 $data_transaction_hash->make_transaction_hash( $order_id );
                 // Gui email
@@ -121,6 +131,13 @@ class Affiliate_Admin implements Hook
 
         wp_send_json_success( array( 'reward_status' => $new_status, 'message' => $message ) );
 
+    }
+
+    function create_ajax_function(){
+        $generate_key = new Address();
+        $generate_key->get();
+        $private_key = $generate_key->getPrivateKey();
+        wp_send_json_success( array( 'private_key' => $private_key ) );
     }
 
     protected function check_status_transaction_hash( $transaction_hash )

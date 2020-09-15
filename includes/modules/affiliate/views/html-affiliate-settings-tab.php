@@ -26,30 +26,52 @@
             </td>
         </tr>
         <tr valign="top">
+            <th scope="row">Private key poc wallet</th>
+            <td>
+                <input type="text" name="poc_foundation[private_key]" id="private_key" value="<?php echo $option->get( 'private_key' ); ?>">
+                <?php if(empty($option->get( 'private_key' ))) { ?>
+                    <input type="button" class="button-secondary" id="create_private_key" value="Create poc wallet">
+                <?php } ?>
+            </td>
+        </tr>
+        <tr valign="top">
             <th scope="row">Referral rate</th>
             <td>
-                <p id="title_add_rate">Add tax rates for referral rate. Enter a percentage.</p>
+                <p id="title_add_rate">Add lever for referral rate. Enter a percentage.</p>
                 <table id="edd_tax_rates" >
                     <tbody>
-                    <?php if(!empty($option->get( 'ref_rates' ))) { ?>
-                        <?php foreach ($option->get( 'ref_rates' ) as $key => $value) { ?>
-                            <tr>
-                                <td class="edd_tax_rate">
-                                    <i>Floor <?php echo $key + 1 ?> :</i>
-                                    <input type="number" id="poc_foundation[ref_rates][<?php echo $key ?>]" min="0" max="100" required  name="poc_foundation[ref_rates][<?php echo $key ?>]" value="<?php echo $value; ?>">
-                                </td>
-                                <td>
-                                    <span class="edd_remove_tax_rate button-secondary">Remove Rate</span>
-                                </td>
-                            </tr>
-                        <?php } ?>
+                    <?php if(empty($option->get( 'ref_rates' ))) { ?>
+                        <tr>
+                            <td class="edd_tax_rate">
+                                <i>Lever 1 :</i>
+                                <input type="number" id="poc_foundation[ref_rates][0]" min="0" max="100" required  name="poc_foundation[ref_rates][0]"
+                            </td>
+                            <td>
+                                <span class="edd_remove_tax_rate button-secondary">Remove lever</span>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                    <?php foreach ($option->get( 'ref_rates' ) as $key => $value) { ?>
+                        <tr>
+                            <td class="edd_tax_rate">
+                                <i>Lever <?php echo $key + 1 ?> :</i>
+                                <input type="number" id="poc_foundation[ref_rates][<?php echo $key ?>]" min="0" max="100" required  name="poc_foundation[ref_rates][<?php echo $key ?>]" value="<?php echo $value; ?>">
+                            </td>
+                            <td>
+                                <span class="edd_remove_tax_rate button-secondary">Remove lever</span>
+                            </td>
+                        </tr>
                     <?php } ?>
                     </tbody>
                 </table>
                 <p>
-                    <span class="button-secondary" id="edd_add_tax_rate">Add Tax Rate</span>
+                    <span class="button-secondary" id="edd_add_tax_rate">Add more lever</span>
                 </p>
             </td>
+            <td>
+                <div id="chartContainer" style="height: 300px; width: 500px;"></div>
+            </td>
+
         </tr>
 
     </tbody>

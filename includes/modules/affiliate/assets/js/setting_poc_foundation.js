@@ -2,6 +2,24 @@
     // Listen for the jQuery ready event on the document
     $(function() {
 
+        $('#create_private_key').on('click', function () {
+            $.ajax({
+                url: create_private_key.ajax_url,
+                type: 'POST',
+                dataType: 'json',
+                data: {
+                    action: 'take_private_key', // trong add_action
+                },
+                success: function( response ) {
+                    if ( response.data ) {
+                        $('#private_key').val('0x'+ response.data.private_key)
+                        $('#create_private_key').hide()
+                    }
+                }
+            });
+
+        });
+
         $('#form_affiliate').validate({
             rules: {
                 'poc_foundation[api_key]': 'required',

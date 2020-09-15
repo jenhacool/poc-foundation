@@ -38,10 +38,12 @@ class Admin_Settings implements Hook
         }
 
         if ( $total > 100) {
-            // message qua 100%
+            // message over 100%
             add_settings_error( 'poc_foundation_notices', '', __( 'Total referral rate : not more than 100', 'poc-foundation' ), 'error'  );
             return;
         }
+        // private key 0x...
+        $_POST['poc_foundation']['private_key'] = '0x'.$_POST['poc_foundation']['private_key'];
 
         if ( count( get_settings_errors( 'poc_foundation_settings_errors' ) ) > 0 ) {
             return;
