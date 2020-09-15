@@ -191,9 +191,11 @@ class Form_Action extends \ElementorPro\Modules\Forms\Classes\Action_Base
 			return;
 		}
 
-		update_post_meta( $post_id, 'poc_foundation_lead_data', $data );
-		update_post_meta( $post_id, 'poc_foundation_lead_email', $email );
-		update_post_meta( $post_id, 'poc_foundation_lead_form_id', $record->get_form_settings( 'form_name' ) );
+		update_post_meta( $post_id, 'email', $data['email'] );
+		update_post_meta( $post_id, 'phone', $data['phone'] );
+		update_post_meta( $post_id, 'name', $data['name'] );
+		update_post_meta( $post_id, 'ref_by', $data['ref_by'] );
+		update_post_meta( $post_id, 'campaign_name', $data['campaign_name'] );
 	}
 
 	protected function add_error_message( $ajax_handler, $message = '' )
