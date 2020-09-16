@@ -77,14 +77,15 @@ class Admin_Setup_Wizard implements Hook
 		exit;
 	}
 
-	public function setup_wizard_header() {
+	public function setup_wizard_header()
+    {
 		?>
 		<!DOCTYPE html>
 		<html <?php language_attributes(); ?>>
 			<head>
 				<meta name="viewport" content="width=device-width" />
 				<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-				<title><?php esc_html_e( 'WooCommerce &rsaquo; Setup Wizard', 'woocommerce' ); ?></title>
+				<title><?php esc_html_e( 'POC Foundation &rsaquo; Setup Wizard', 'poc-foundation' ); ?></title>
 				<?php do_action( 'admin_enqueue_scripts' ); ?>
 				<?php wp_print_scripts( 'jquery-validation' ); ?>
 				<?php wp_print_scripts( 'poc-foundation-setup' ); ?>
@@ -96,7 +97,8 @@ class Admin_Setup_Wizard implements Hook
 		<?php
 	}
 
-	public function setup_wizard_footer() {
+	public function setup_wizard_footer()
+    {
 		?>
 			<?php if ( 'done' === $this->step ) : ?>
 				<p>
@@ -108,7 +110,8 @@ class Admin_Setup_Wizard implements Hook
 		<?php
 	}
 
-	public function setup_wizard_steps() {
+	public function setup_wizard_steps()
+    {
 		$output_steps = $this->steps;
 		?>
 		<ol class="setup-steps">
@@ -143,14 +146,15 @@ class Admin_Setup_Wizard implements Hook
         <?php endif;
 	}
 
-	protected function next_step_buttons( $submit_text = 'Continue', $allow_skip = false ) {
+	protected function next_step_buttons( $submit_text = 'Continue', $allow_skip = false )
+    {
 		?>
 		<p class="setup-actions step">
 			<input type="submit" class="button-primary button button-next" value="<?php esc_attr_e( $submit_text, 'poc-foundation' ); ?>" name="save_step" />
             <?php if ( $allow_skip ) : ?>
 			    <a href="<?php echo esc_url( $this->get_next_step_link() ); ?>" class="button button-next"><?php esc_html_e( 'Skip this step', 'poc-foundation' ); ?></a>
             <?php endif; ?>
-			<?php wp_nonce_field( 'erp-setup' ); ?>
+			<?php wp_nonce_field( 'poc-foundation-setup' ); ?>
 		</p>
 		<?php
 	}
@@ -187,7 +191,8 @@ class Admin_Setup_Wizard implements Hook
 			'poc_foundation_setup_data',
 			array(
 				'ajax_url' => admin_url( 'admin-ajax.php' ),
-                'next_step_link' => $this->get_next_step_link()
+                'next_step_link' => $this->get_next_step_link(),
+                'setup_nonce' => wp_create_nonce( 'setup_nonce' )
 			)
 		);
 	}
@@ -197,7 +202,7 @@ class Admin_Setup_Wizard implements Hook
 		?>
             <form method="POST">
 			    <h2><?php echo __( 'Welcome to POC Foundation', 'poc-foundation' ); ?></h2>
-                <p><?php echo __( 'Please complete all the steps to start using POC Foundation plugin' ); ?></p>
+                <p><?php echo __( 'Please complete all the steps to start using POC Foundation plugin', 'poc-foundation' ); ?></p>
                 <?php $this->next_step_buttons(); ?>
             </form>
 		<?php
@@ -237,29 +242,29 @@ class Admin_Setup_Wizard implements Hook
             <table class="form-table">
                 <tbody>
                     <?php foreach ( $plugin_manager->get_required_plugins() as $plugin ) : ?>
-                        <?php
-	                        $keys = array();
-
-                            if ( ! $plugin_manager->is_plugin_installed( $plugin['slug'] ) ) {
-                                $keys[] = 'Installation';
-                            }
-                            if ( $plugin_manager->is_plugin_updateable( $plugin['slug'] ) !== false ) {
-                                $keys[] = 'Update';
-                            }
-                            if ( ! $plugin_manager->is_plugin_active( $plugin['slug'] ) ) {
-                                $keys[] = 'Activation';
-                            }
-                            if ( $plugin['slug'] === 'elementor-pro' && ! $plugin_manager->elementor_pro->is_license_valid() ) {
-                                $keys[] = 'Activate license';
-                            }
-                        ?>
                         <tr data-slug="<?php echo esc_attr( $plugin['slug'] ); ?>">
                             <th scope="row"><?php echo esc_html( $plugin['name'] ); ?></th>
                             <td>
-                                <?php if ( in_array( 'Installation', $keys ) ) : ?>
-                                    Required
+                                <?php if ( ! $plugin_manager->is_plugin_installed( $plugin['slug'] ) ) : ?>
+	                                <?php echo __( 'Required', 'poc-foundation' ); ?>
                                 <?php else : ?>
-                                    <?php echo ( empty( $keys ) ) ? '<span class="dashicons dashicons-yes"></span>' : implode( ' and ', $keys ) . ' required'; ?>
+                                    <?php
+	                                    $keys = array();
+
+                                        if ( $plugin_manager->is_plugin_updateable( $plugin['slug'] ) !== false ) {
+                                            $keys[] = __( 'Update', 'poc-foundation' );
+                                        }
+
+                                        if ( ! $plugin_manager->is_plugin_active( $plugin['slug'] ) ) {
+                                            $keys[] = __( 'Activation', 'poc-foundation' );
+                                        }
+
+                                        if ( $plugin['slug'] === 'elementor-pro' && ! $plugin_manager->elementor_pro->is_license_valid() ) {
+                                            $keys[] = __( 'Activate license', 'poc-foundation' );
+                                        }
+
+                                        echo ( empty( $keys ) ) ? '<span class="dashicons dashicons-yes"></span>' : implode( ' and ', $keys ) . ' required';
+                                    ?>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -267,7 +272,7 @@ class Admin_Setup_Wizard implements Hook
                 </tbody>
             </table>
 
-	        <?php $this->next_step_buttons( 'Install' ); ?>
+	        <?php $this->next_step_buttons( __( 'Install', 'poc-foundation' ) ); ?>
         </form>
         <?php
 	}
@@ -279,27 +284,27 @@ class Admin_Setup_Wizard implements Hook
         <form method="POST" id="step-config">
             <table class="form-table">
                 <tbody>
-                <tr valign="top">
-                    <th scope="row">API Key</th>
+                <tr>
+                    <th scope="row"><?php echo __( 'API Key', 'poc-foundation' ); ?></th>
                     <td>
                         <input type="text" name="poc_foundation[api_key]" value="<?php echo $option->get( 'api_key' ); ?>">
-                        <p class="description">You can get API Key from Campaign Management page on citizen.poc.me.</p>
+                        <p class="description"><?php echo __( 'You can get API Key from Campaign Management page on citizen.poc.me.', 'poc-foundation' ); ?></p>
                     </td>
                 </tr>
-                <tr valign="top">
-                    <th scope="row">UID Prefix</th>
+                <tr>
+                    <th scope="row"><?php echo __( 'UID Prefix', 'poc-foundation' ); ?></th>
                     <td>
                         <input type="text" name="poc_foundation[uid_prefix]" value="<?php echo $option->get( 'uid_prefix' ); ?>">
                     </td>
                 </tr>
-                <tr valign="top">
-                    <th scope="row">Default Discount</th>
+                <tr>
+                    <th scope="row"><?php echo __( 'Default Discount', 'poc-foundation' ); ?></th>
                     <td>
                         <input type="number" name="poc_foundation[default_discount]" value="<?php echo $option->get( 'default_discount' ); ?>">
                     </td>
                 </tr>
-                <tr valign="top">
-                    <th scope="row">Default Revenue Share</th>
+                <tr>
+                    <th scope="row"><?php echo __( 'Default Revenue Share', 'poc-foundation' ); ?></th>
                     <td>
                         <input type="number" name="poc_foundation[default_revenue_share]" value="<?php echo $option->get( 'default_revenue_share' ); ?>">
                     </td>
@@ -315,8 +320,8 @@ class Admin_Setup_Wizard implements Hook
     public function step_done()
     {
         ?>
-        <h2>Done!</h2>
-        <p>Please enjoy using POC Foundation plugin</p>
+        <h2><?php echo __( 'Done!', 'poc-foundation' ); ?></h2>
+        <p><?php echo __( 'Please enjoy using POC Foundation plugin', 'poc-foundation' ); ?></p>
         <?php
     }
 

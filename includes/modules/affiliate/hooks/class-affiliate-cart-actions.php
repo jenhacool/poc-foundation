@@ -2,6 +2,7 @@
 
 namespace POC\Foundation\Modules\Affiliate\Hooks;
 
+use POC\Foundation\Classes\Helper;
 use POC\Foundation\Classes\Option;
 use POC\Foundation\Contracts\Hook;
 use POC\Foundation\Modules\Affiliate\Utilities\Check_Coupon;
@@ -36,10 +37,6 @@ class Affiliate_Cart_Actions implements Hook
 
 	public function apply_coupon_by_customer_info( $post_data )
 	{
-		if ( $this->has_applied_coupons() ) {
-			return;
-		}
-
 		$data = array();
 
 		$post_data_array = explode( '&', $post_data );
@@ -56,8 +53,14 @@ class Affiliate_Cart_Actions implements Hook
 
 		$meta_query_args = array();
 
-		if ( ! empty( $data['billing_email'] ) && ! empty( $data['billing_phone'] ) ) {
-			$meta_query_args['relation'] = 'AND';
+		if ( ! empty( $data['billing_phone'] ) ) {
+			$this->get_cart()->get_customer()->set_billing_phone( $data['billing_phone'] );
+
+			$meta_query_args[] = array(
+				'key' => 'phone',
+				'value' => Helper::sanitize_phone_number( $data['billing_phone'] ),
+				'compare' => '='
+			);
 		}
 
 		if ( ! empty( $data['billing_email'] ) ) {
@@ -65,17 +68,7 @@ class Affiliate_Cart_Actions implements Hook
 
 			$meta_query_args[] = array(
 				'key' => 'email',
-				'value' => $data['billing_email'],
-				'compare' => '='
-			);
-		}
-
-		if ( ! empty( $data['billing_phone'] ) ) {
-			$this->get_cart()->get_customer()->set_billing_phone( $data['billing_phone'] );
-
-			$meta_query_args[] = array(
-				'key' => 'phone',
-				'value' => $data['billing_phone'],
+				'value' => sanitize_email( $data['billing_email'] ),
 				'compare' => '='
 			);
 		}
@@ -83,6 +76,10 @@ class Affiliate_Cart_Actions implements Hook
 		if ( empty( $meta_query_args ) ) {
 			$this->get_cart()->remove_coupons();
 			return;
+		}
+
+		if ( count( $meta_query_args ) === 2 ) {
+			$meta_query_args['relation'] = 'OR';
 		}
 
 		$args = array(

@@ -2,6 +2,7 @@
 
 namespace POC\Foundation\Modules\LGS\Hooks\Elementor\FormActions;
 
+use POC\Foundation\Classes\Helper;
 use POC\Foundation\Classes\POC_API;
 
 class Form_Action extends \ElementorPro\Modules\Forms\Classes\Action_Base
@@ -191,11 +192,11 @@ class Form_Action extends \ElementorPro\Modules\Forms\Classes\Action_Base
 			return;
 		}
 
-		update_post_meta( $post_id, 'email', $data['email'] );
-		update_post_meta( $post_id, 'phone', $data['phone'] );
-		update_post_meta( $post_id, 'name', $data['name'] );
-		update_post_meta( $post_id, 'ref_by', $data['ref_by'] );
-		update_post_meta( $post_id, 'campaign_name', $data['campaign_name'] );
+		update_post_meta( $post_id, 'email', sanitize_email( $data['email'] ) );
+		update_post_meta( $post_id, 'phone', Helper::sanitize_phone_number( $data['phone'] ) );
+		update_post_meta( $post_id, 'name', sanitize_text_field( $data['name'] ) );
+		update_post_meta( $post_id, 'ref_by', sanitize_text_field( $data['ref_by'] ) );
+		update_post_meta( $post_id, 'campaign_name', sanitize_text_field( $data['campaign_name'] ) );
 	}
 
 	protected function add_error_message( $ajax_handler, $message = '' )

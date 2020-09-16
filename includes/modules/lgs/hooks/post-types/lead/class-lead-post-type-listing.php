@@ -30,7 +30,7 @@ class Lead_Post_Type_Listing implements Hook
 	{
 		switch ( $column_name ) {
 			case 'phone' :
-				$phone = get_post_meta( $post_id, 'phone', true );
+				$phone = '0' . get_post_meta( $post_id, 'phone', true );
 				$content = '<a href="tel:' . $phone . '" target="_blank">' . $phone . '</a>';
 				break;
 

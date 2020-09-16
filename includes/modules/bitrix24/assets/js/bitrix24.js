@@ -40,9 +40,10 @@
 
             $('#wpbody').on('click', '#doaction', function(e) {
                 var action = $('#bulk-action-selector-top').val();
-                if(action === 'send_bitrix24') {
-                    e.preventDefault();
+                if(action != 'send_bitrix24') {
+                    return;
                 }
+                e.preventDefault();
                 poc_foundation_bitrix24.setQueuedItems();
                 if(poc_foundation_bitrix24.items.queued.length > 0) {
                     poc_foundation_bitrix24.showDialog();

@@ -16,23 +16,23 @@ class Lead_Post_Type_Register implements Hook
 		$labels = array(
 			'name'               => _x( 'POC Foundation Leads', 'post type general name', 'poc-foundation' ),
 			'singular_name'      => _x( 'Lead', 'post type singular name', 'poc-foundation' ),
-			'menu_name'          => _x( 'Elementor DB', 'admin menu', 'poc-foundation' ),
-			'name_admin_bar'     => _x( 'Elementor DB', 'add new on admin bar', 'poc-foundation' ),
-			'add_new'            => _x( 'Add New', 'Elementor DB', 'poc-foundation' ),
-			'add_new_item'       => __( 'Add New Elementor DB', 'poc-foundation' ),
-			'new_item'           => __( 'New Elementor DB', 'poc-foundation' ),
-			'edit_item'          => __( 'Edit Elementor DB', 'poc-foundation' ),
-			'view_item'          => __( 'View Elementor DB', 'poc-foundation' ),
-			'all_items'          => __( 'All Elementor DB', 'poc-foundation' ),
-			'search_items'       => __( 'Search Elementor DB', 'poc-foundation' ),
-			'parent_item_colon'  => __( 'Parent Elementor DB:', 'poc-foundation' ),
-			'not_found'          => __( 'No contact form submissions found.', 'poc-foundation' ),
-			'not_found_in_trash' => __( 'No contact form submissions found in Trash.', 'poc-foundation' )
+			'menu_name'          => _x( 'Lead', 'admin menu', 'poc-foundation' ),
+			'name_admin_bar'     => _x( 'Lead', 'add new on admin bar', 'poc-foundation' ),
+			'add_new'            => _x( 'Add New', 'Lead', 'poc-foundation' ),
+			'add_new_item'       => __( 'Add New Lead', 'poc-foundation' ),
+			'new_item'           => __( 'New Lead', 'poc-foundation' ),
+			'edit_item'          => __( 'Edit Lead', 'poc-foundation' ),
+			'view_item'          => __( 'View Lead', 'poc-foundation' ),
+			'all_items'          => __( 'All Leads', 'poc-foundation' ),
+			'search_items'       => __( 'Search Lead', 'poc-foundation' ),
+			'parent_item_colon'  => __( 'Parent Lead:', 'poc-foundation' ),
+			'not_found'          => __( 'No leads found.', 'poc-foundation' ),
+			'not_found_in_trash' => __( 'No leads found in Trash.', 'poc-foundation' )
 		);
 
 		$args = array(
 			'labels'             => $labels,
-			'description'        => __( 'For storing Elementor contact form submissions.', 'poc-foundation' ),
+			'description'        => __( 'For storing POC Foundation lead.', 'poc-foundation' ),
 			'public'             => false,
 			'publicly_queryable' => false,
 			'show_ui'            => true,
