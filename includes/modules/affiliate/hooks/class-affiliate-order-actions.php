@@ -2,6 +2,7 @@
 
 namespace POC\Foundation\Modules\Affiliate\Hooks;
 
+use POC\Foundation\Classes\Option;
 use POC\Foundation\Classes\POC_API;
 use POC\Foundation\Contracts\Hook;
 use POC\Foundation\Modules\Affiliate\Utilities\Check_Coupon;
@@ -244,7 +245,7 @@ class Affiliate_Order_Actions implements Hook
 	 */
 	protected function get_uid_prefix()
 	{
-		return get_option( 'poc_foundation_uid_prefix', true );
+		return Option::get( 'uid_prefix' );
 	}
 
 	/**
@@ -274,7 +275,13 @@ class Affiliate_Order_Actions implements Hook
 	 */
 	protected function get_default_revenue_share()
 	{
-		return get_option( 'poc_foundation_default_revenue_share', 60 );
+		$default_revenue_share = Option::get( 'default_revenue_share' );
+
+		if ( empty( $default_revenue_share ) ) {
+			return 60;
+		}
+
+		return $default_revenue_share;
 	}
 
 	protected function get_api_wrapper()
