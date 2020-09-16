@@ -27,7 +27,15 @@ class Bitrix24_Data
 
 		$deal_categories = $this->get_api_client()->get_deal_categories();
 
+		if ( empty( $deal_categories ) || ! is_array( $deal_categories ) ) {
+			return $stages;
+		}
+
 		$statuses = $this->get_api_client()->get_statuses();
+
+		if ( empty( $statuses ) || ! is_array( $statuses ) ) {
+			return $stages;
+		}
 
 		foreach ( $deal_categories as $deal_category ) {
 			foreach ( $statuses as $status ) {
