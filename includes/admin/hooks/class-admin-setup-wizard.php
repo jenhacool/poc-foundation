@@ -135,7 +135,7 @@ class Admin_Setup_Wizard implements Hook
 	public function setup_wizard_content()
     {
         ?>
-        <?php if ( $this->step != 'license' && ! $this->is_license_valid() ) : ?>
+        <?php if ( $this->step != 'introduction' && $this->step != 'license' && ! $this->is_license_valid() ) : ?>
             <script>
                 window.location.href = "<?php echo $this->get_license_step_link(); ?>";
             </script>
