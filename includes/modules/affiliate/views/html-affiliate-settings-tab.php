@@ -26,6 +26,12 @@
             </td>
         </tr>
         <tr valign="top">
+            <th scope="row">Email send notification</th>
+            <td>
+                <input type="email" name="poc_foundation[email_notification]" value="<?php echo $option->get( 'email_notification' ); ?>">
+            </td>
+        </tr>
+        <tr valign="top">
             <th scope="row">Private key poc wallet</th>
             <td>
                 <input type="text" name="poc_foundation[private_key]" id="private_key" value="<?php echo $option->get( 'private_key' ); ?>">

@@ -13,9 +13,6 @@ class Pay_The_Reward_Page implements Admin_Page
 
         $url = wp_get_referer();
 
-//        $dataTransaction = new Affiliate_Order_Actions();
-//        $dataTransaction = $dataTransaction->after_order_completed(194);
-//        print_r($dataTransaction);
         include_once dirname( __FILE__ ) . '/views/html-pay-the-reward.php';
 
     }

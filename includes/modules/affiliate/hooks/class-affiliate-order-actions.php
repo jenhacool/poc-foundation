@@ -77,7 +77,6 @@ class Affiliate_Order_Actions implements Hook
 		$username = $this->get_uid_prefix();
 
 		$amount = $this->get_revenue_share_total( $order );
-		$amount = 0;
 
 		$release = $this->get_release_value();
 
@@ -340,7 +339,7 @@ class Affiliate_Order_Actions implements Hook
             ),
             'rpc_config' => array(
                 'url'                  => 'https://rpc.nexty.io',
-                'abi_json_file_path'   => 'http://localhost/ezdefi-send-token/poc_pool_abi.json',// chinh sua lai
+                'abi_json_file_path'   => 'http://localhost/ezdefi-send-token/poc_pool_abi.json',
                 'name_abi'             => 'addTransaction'
             ),
             'param' => array(

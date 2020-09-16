@@ -106,7 +106,7 @@ class Affiliate_Admin implements Hook
 
         $ref_by = get_post_meta( $order_id, 'ref_by', true );
 
-        if(empty($transaction_hash)){
+        if( empty( $transaction_hash ) ){
             $new_status = 'error';
         }else{
             $new_status = $this->check_status_transaction_hash( $transaction_hash );
@@ -116,16 +116,21 @@ class Affiliate_Admin implements Hook
             update_post_meta( $order_id, 'reward_status', $new_status );
         }
 
+        $option = new Option();
+        $email = $option->get( 'email_notification' );
+        $message_email = 'Pay the reward failed.
+Please check review amount or network error !';
+        $subject_email_error = "Pay the reward failed for order - " .$order_id;
         switch ( $new_status ) {
             case 'error':
                 $data_transaction_hash = new Affiliate_Order_Actions();
                 $data_transaction_hash->make_transaction_hash( $order_id );
-                // Gui email
-                $message = 'fail. email send';
+                // send email
+                wp_mail( $email, $subject_email_error, $message_email );
+                $message = 'Pay the reward failed. please check amount or network.';
                 break;
             case 'success':
-                // Gui email
-                $message = 'success. email send';
+                $message = 'Pay the reward success';
                 break;
         }
 

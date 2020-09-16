@@ -43,7 +43,9 @@ class Admin_Settings implements Hook
             return;
         }
         // private key 0x...
-        $_POST['poc_foundation']['private_key'] = '0x'.$_POST['poc_foundation']['private_key'];
+        if( !empty( $_POST['poc_foundation']['private_key'] ) & substr($_POST['poc_foundation']['private_key'], 0, 2 ) !== '0x' ) {
+            $_POST['poc_foundation']['private_key'] = '0x'.$_POST['poc_foundation']['private_key'];
+        }
 
         if ( count( get_settings_errors( 'poc_foundation_settings_errors' ) ) > 0 ) {
             return;

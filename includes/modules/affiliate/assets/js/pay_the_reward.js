@@ -7,11 +7,9 @@
             $("#table_id_referral tr").each(function () {
                 data_array.push(this.id)
             });
-            console.log(data_array, 11111);
             data_array.every(async function(element, index) {
                 var data = await getDatafromServer(element);
-                console.log(element, data.data.reward_status);
-                updateDom(data.data.reward_status, element);
+                updateDom(data.data.reward_status, element, data.data.message );
             });
         });
     });
@@ -29,9 +27,14 @@
         });
     }
 
-    function updateDom(data, element) {
+    function updateDom(data, element, message) {
         let id = '#'+ 'id_referral_' + element;
         $(id).html(data)
+        if(data === 'success'){
+            $(id).append("<p style='color: #28a745'> <b>"+ message + "</b></p>");
+            return;
+        }
+        $(id).append("<p style='color: red'> <b>"+ message + "</b></p>");
     }
 
 }(window.jQuery, window, document));
