@@ -8,7 +8,7 @@
                 type: 'POST',
                 dataType: 'json',
                 data: {
-                    action: 'take_private_key', // trong add_action
+                    action: 'take_private_key',
                 },
                 success: function( response ) {
                     if ( response.data ) {
@@ -97,7 +97,5 @@
         });
 
     });
-
-
 
 }(window.jQuery, window, document));

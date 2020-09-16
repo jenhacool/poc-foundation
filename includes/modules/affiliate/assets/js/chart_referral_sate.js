@@ -26,11 +26,7 @@ window.onload = function() {
             dataPoints: data_rate
         }],
     });
-    console.log(typeof data_rate[0].y);
-    console.log(isNaN(data_rate[0].y));
-    console.log(isNaN(12));
     if( isNaN(data_rate[0].y) ){
-        console.log(111);
         return;
     }
 

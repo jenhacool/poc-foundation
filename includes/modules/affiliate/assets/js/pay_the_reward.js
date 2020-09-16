@@ -20,7 +20,7 @@
             type: 'POST',
             dataType: 'json',
             data: {
-                action: 'take_data_user', // trong add_action
+                action: 'take_data_user',
                 order_id: element
             },
             context: this,
