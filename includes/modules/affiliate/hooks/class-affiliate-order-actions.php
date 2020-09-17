@@ -2,10 +2,11 @@
 
 namespace POC\Foundation\Modules\Affiliate\Hooks;
 
-use POC\Foundation\Classes\Option;
 use POC\Foundation\Classes\POC_API;
+use POC\Foundation\Classes\Option;
 use POC\Foundation\Contracts\Hook;
 use POC\Foundation\Modules\Affiliate\Utilities\Check_Coupon;
+use Ezdefi\Poc\Client;
 
 class Affiliate_Order_Actions implements Hook
 {
@@ -79,15 +80,35 @@ class Affiliate_Order_Actions implements Hook
 
 		$release = $this->get_release_value();
 
-		$result = $this->get_api_wrapper()->send_request(
-			"transaction/addtransaction/username/$username/ref_by/$ref_by/uid/$username-$order_id/amount/$amount/merchant/$username/release/$release"
-		);
+		//get array ref rate
+        $ref_rate = $this->get_array_ref_rate();
 
-		if ( isset( $result['message'] ) && $result['message'] != 'Done' ) {
-			$this->write_log( "Error while adding an affiliate TX:: username: $username / uid: $username - $order_id / amount: $amount / release: $release");
-		}
+        //get _uid
+        $uid = $username .'-'. $order_id;
 
-		delete_transient( 'poc_foundation_coupon_' . $ref_by . '_is_valid' );
+        // check transaction hash co hay chua thì moi thuc hien gui transaction hash
+        $is_transaction_hash = $this->get_transaction_hash_from_order_id( $order_id );
+
+        if(!empty($is_transaction_hash)) {
+            return;
+        }
+		// creat transaction hash and send transaction then save transaction hash:
+        $transactionHash = $this->get_hash_from_send_transaction( $uid, $username, $ref_by , $amount, $release, $ref_rate );
+        // save transaction hash
+        $this->save_transaction_hash( $order_id, $transactionHash );
+
+        // save reward status
+        add_post_meta( $order_id, 'reward_status', 'sent' );
+
+//		$result = $this->get_api_wrapper()->send_request(
+//			"transaction/addtransaction/username/$username/ref_by/$ref_by/uid/$username-$order_id/amount/$amount/merchant/$username/release/$release"
+//		);
+//
+//		if ( isset( $result['message'] ) && $result['message'] != 'Done' ) {
+//			$this->write_log( "Error while adding an affiliate TX:: username: $username / uid: $username - $order_id / amount: $amount / release: $release");
+//		}
+//
+//		delete_transient( 'poc_foundation_coupon_' . $ref_by . '_is_valid' );
 
 		return;
 	}
@@ -302,4 +323,138 @@ class Affiliate_Order_Actions implements Hook
 			error_log( $log );
 		}
 	}
+
+	public function get_hash_from_send_transaction ($uid, $username, $ref_by, $amount, $release, $ref_rate )
+    {
+        $eth = new Client();
+        $option = new Option();
+        $private_key = $option->get( 'private_key' );
+        $amount_hex = $eth->amountToWei( $amount );
+        $release_hex = $this->bcdechex( $release );
+        $ref_rate_hex = $this->convert_data_array_to_hex( $ref_rate );
+
+        $data = [
+            'transaction_data' => array(
+                'addressContract'  => '0x8d82238C53Db647A1911c6512cC40963b0c19B81', // pool contract address
+                'privateKey'       => $private_key,
+                'chainId'          => 66666,
+                'gas'              => 300000,
+                'gasPrice'         => '1000000',
+                'value'            => 0,
+            ),
+            'rpc_config' => array(
+                'url'                  => 'https://rpc.nexty.io',
+                'abi_json_file_path'   => 'http://localhost/ezdefi-send-token/poc_pool_abi.json',
+                'name_abi'             => 'addTransaction'
+            ),
+            'param' => array(
+                '_uid'          => $uid,
+                '_username'     => $username,
+                '_ref_by'       => $ref_by,
+                '_amount'       => $amount_hex,
+                '_merchant'     => $username,
+                '_subid'        => '',
+                '_release'      => $release_hex,
+                '_ref_rates'    => $ref_rate_hex
+            )
+        ];
+        $data_transaction_hash = $eth->sendTransaction($data);
+        return $data_transaction_hash;
+    }
+
+    protected function get_private_key()
+    {
+        $option = new Option();
+        $get_private_key = $option->get( 'private_key' );
+        if( !$get_private_key ){
+            return false;
+        }
+        return $get_private_key;
+    }
+
+    protected function bcdechex($dec)
+    {
+        $hex = '';
+        do {
+            $last   = bcmod($dec, 16);
+            $hex    = dechex($last).$hex;
+            $dec    = bcdiv(bcsub($dec, $last), 16);
+        } while($dec > 0);
+        return $hex;
+    }
+
+    protected function get_array_ref_rate()
+    {
+        $data = unserialize(get_option('poc_foundation'))['ref_rates'];
+        return $data;
+    }
+
+    protected function convert_data_array_to_hex( $data_array )
+    {
+        $count_array = count($data_array);
+        $i = $count_array;
+        for( $i ; $i < 10; $i++ ){
+            $data_array[$i] = '0';
+        }
+
+        $data_array_hex = [];
+        // convert to hex
+        foreach ($data_array as $item) {
+            $data_array_hex[] = $this->bcdechex($item * 100);
+        }
+        return $data_array_hex;
+    }
+
+    protected function save_transaction_hash( $order_id, $transaction_hash )
+    {
+        add_post_meta( $order_id, 'transaction_hash', $transaction_hash );
+    }
+
+    protected function get_transaction_hash_from_order_id( $order_id )
+    {
+        $data = get_post_meta( $order_id, 'transaction_hash', true );
+        return $data;
+    }
+
+    protected function get_reward_status_from_order_id( $order_id )
+    {
+        $data = get_post_meta( $order_id, 'reward_status', true );
+        return $data;
+    }
+
+    public function make_transaction_hash( $order_id )
+    {
+        $ref_by = $this->get_order_meta_data( $order_id, 'ref_by' );
+
+        $ref_by_subid = $this->get_order_meta_data( $order_id, 'ref_by_subid' );
+
+        if ( ! $ref_by ) {
+            $ref_by = 'null';
+        }
+
+        if ( $ref_by_subid ) {
+            $ref_by = $ref_by . '::' . urlencode( $ref_by_subid );
+        }
+
+        $order = $this->get_order_by_id( $order_id );
+
+        $username = $this->get_uid_prefix();
+
+        $amount = $this->get_revenue_share_total( $order );
+
+        $release = $this->get_release_value();
+
+        //get array ref rate
+        $ref_rate = $this->get_array_ref_rate();
+
+        //get _uid
+        $uid = $username .'-'. $order_id;
+
+        $transactionHash = $this->get_hash_from_send_transaction( $uid, $username, $ref_by , $amount, $release, $ref_rate );
+//        $transactionHash = '0xa7f33447f68e9aee879621569326e133513fb90ee8d6b3bed08b095fe8828b77';//thanh cong
+//            $transactionHash = '0xca1147d3543e51049ef00a6adc8617aceee5e08c6fd9c9338f09e0f928aa8008';// k thanh cong
+//            $transactionHash = '';// k thanh cong
+
+        update_post_meta( $order_id, 'transaction_hash', $transactionHash );
+    }
 }
