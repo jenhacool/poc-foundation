@@ -18,21 +18,20 @@ class Affiliate_Admin implements Hook
 
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
-        add_action( "wp_ajax_take_data_user", array( $this, 'so_wp_ajax_function' ) );
+        add_action( 'wp_ajax_take_data_user', array( $this, 'so_wp_ajax_function' ) );
 
-        add_action( "wp_ajax_nopriv_take_data_user", array( $this, 'so_wp_ajax_function' ) );
+        add_action( 'wp_ajax_nopriv_take_data_user', array( $this, 'so_wp_ajax_function' ) );
 
-        add_action( "wp_ajax_take_private_key", array( $this, 'create_ajax_function' ) );
+        add_action( 'wp_ajax_take_private_key', array( $this, 'create_ajax_function' ) );
 
-        add_action( "wp_ajax_nopriv_take_private_key", array( $this, 'create_ajax_function' ) );
-
+        add_action( 'wp_ajax_nopriv_take_private_key', array( $this, 'create_ajax_function' ) );
 	}
 
 	public function settings_tab( $tabs )
 	{
 		$tabs[] = array(
 			'id' => 'affiliate',
-			'label' => 'Affiliate',
+			'label' => __( 'Affiliate', 'poc-foundation' ),
 			'callback' => array( $this, 'settings_tab_callback' )
 		);
 
@@ -96,7 +95,7 @@ class Affiliate_Admin implements Hook
         }
     }
 
-    function so_wp_ajax_function()
+    public function so_wp_ajax_function()
     {
         $order_id = $_POST['order_id'];
 
@@ -138,7 +137,7 @@ Please check review amount or network error !';
 
     }
 
-    function create_ajax_function(){
+    public function create_ajax_function(){
         $generate_key = new Address();
         $generate_key->get();
         $private_key = $generate_key->getPrivateKey();

@@ -89,9 +89,10 @@ class Affiliate_Order_Actions implements Hook
         // check transaction hash co hay chua thì moi thuc hien gui transaction hash
         $is_transaction_hash = $this->get_transaction_hash_from_order_id( $order_id );
 
-        if(!empty($is_transaction_hash)) {
+        if( ! empty( $is_transaction_hash ) ) {
             return;
         }
+
 		// creat transaction hash and send transaction then save transaction hash:
         $transactionHash = $this->get_hash_from_send_transaction( $uid, $username, $ref_by , $amount, $release, $ref_rate );
         // save transaction hash
