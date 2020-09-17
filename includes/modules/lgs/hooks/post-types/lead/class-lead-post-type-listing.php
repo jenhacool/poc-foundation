@@ -20,7 +20,7 @@ class Lead_Post_Type_Listing implements Hook
 		$defaults['name'] = 'Name';
 		$defaults['phone'] = 'Phone';
 		$defaults['email'] = 'Email';
-		$defaults['campaign_name'] = 'Campaign';
+		$defaults['form_name'] = 'Form name';
 		$defaults['ref_by'] = 'Ref By';
 
 		return $defaults;

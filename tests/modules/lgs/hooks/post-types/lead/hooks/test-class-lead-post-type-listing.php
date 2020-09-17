@@ -56,7 +56,7 @@ class Test_Class_Lead_Post_Type_Listing extends \WP_UnitTestCase
 		$this->assertTrue( isset( $defaults['name'] ) );
 		$this->assertTrue( isset( $defaults['phone'] ) );
 		$this->assertTrue( isset( $defaults['email'] ) );
-		$this->assertTrue( isset( $defaults['campaign_name'] ) );
+		$this->assertTrue( isset( $defaults['form_name'] ) );
 		$this->assertTrue( isset( $defaults['ref_by'] ) );
 	}
 
@@ -65,9 +65,9 @@ class Test_Class_Lead_Post_Type_Listing extends \WP_UnitTestCase
 		$post_id = $this->factory->post->create();
 
 		update_post_meta( $post_id, 'name', 'John Doe' );
-		update_post_meta( $post_id, 'phone', '01234567890' );
+		update_post_meta( $post_id, 'phone', '1234567890' );
 		update_post_meta( $post_id, 'email', 'admin@gmail.com' );
-		update_post_meta( $post_id, 'campaign_name', 'Example Campaign' );
+		update_post_meta( $post_id, 'form_name', 'Example Form' );
 		update_post_meta( $post_id, 'ref_by', 'flyforever123' );
 
 		ob_start();
@@ -83,8 +83,8 @@ class Test_Class_Lead_Post_Type_Listing extends \WP_UnitTestCase
 		$this->assertEquals( '<a href="mailto:admin@gmail.com" target="_blank">admin@gmail.com</a>', ob_get_clean() );
 
 		ob_start();
-		$this->instance->columns_content( 'campaign_name', $post_id );
-		$this->assertEquals( 'Example Campaign', ob_get_clean() );
+		$this->instance->columns_content( 'form_name', $post_id );
+		$this->assertEquals( 'Example Form', ob_get_clean() );
 
 		ob_start();
 		$this->instance->columns_content( 'ref_by', $post_id );
