@@ -31,7 +31,7 @@
     "repositories": [
         {
             "type": "path",
-            "url": "../../../../ezdefi-send-token",
+            "url": "./includes/packages/transaction_token",
             "symlink": false
         }
     ]

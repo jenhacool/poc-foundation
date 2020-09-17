@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "977158ebc120bb6552aa009634397445",
+    "content-hash": "06e71775042006fe091cb0256828cbf2",
     "packages": [
         {
             "name": "digitaldonkey/ecverify",
@@ -97,8 +97,8 @@
             "version": "dev-new",
             "dist": {
                 "type": "path",
-                "url": "../../../../ezdefi-send-token",
-                "reference": "edeafed9dcad484fd0a33483109265d3e723d6f5"
+                "url": "./includes/packages/transaction_token",
+                "reference": "49bc59083b9172511080622a1e1b6afca4094af5"
             },
             "require": {
                 "digitaldonkey/ethereum-php": "dev-master",
@@ -908,12 +908,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpseclib/phpseclib.git",
-                "reference": "272b6b2cfb4996ffd567bee6dc49006974e27e01"
+                "reference": "07ae7972e9f9dc0bd002792460c76a00e6149e6b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/272b6b2cfb4996ffd567bee6dc49006974e27e01",
-                "reference": "272b6b2cfb4996ffd567bee6dc49006974e27e01",
+                "url": "https://api.github.com/repos/phpseclib/phpseclib/zipball/07ae7972e9f9dc0bd002792460c76a00e6149e6b",
+                "reference": "07ae7972e9f9dc0bd002792460c76a00e6149e6b",
                 "shasum": ""
             },
             "require": {
@@ -1007,7 +1007,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-09-08T04:24:55+00:00"
+            "time": "2020-09-12T02:23:49+00:00"
         },
         {
             "name": "psr/http-message",
@@ -1405,12 +1405,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "a6977d63bf9a0ad4c65cd352709e230876f9904a"
+                "reference": "48928d471ede0548b399f54b0286fe0d0ed79267"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/a6977d63bf9a0ad4c65cd352709e230876f9904a",
-                "reference": "a6977d63bf9a0ad4c65cd352709e230876f9904a",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/48928d471ede0548b399f54b0286fe0d0ed79267",
+                "reference": "48928d471ede0548b399f54b0286fe0d0ed79267",
                 "shasum": ""
             },
             "require": {
@@ -1474,7 +1474,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2020-07-14T12:35:20+00:00"
+            "time": "2020-09-14T11:01:58+00:00"
         },
         {
             "name": "symfony/polyfill-php70",
