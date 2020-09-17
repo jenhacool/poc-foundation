@@ -26,41 +26,7 @@ class Form_Action extends \ElementorPro\Modules\Forms\Classes\Action_Base
 
 	public function register_settings_section( $widget )
 	{
-		$page_options = array();
 
-		foreach ( get_pages() as $page ) {
-			$page_options[$page->ID] = $page->post_title;
-		}
-
-		$widget->start_controls_section(
-			'section_poc',
-			[
-				'label' => __( 'POC', 'poc-foundation' ),
-				'condition' => [
-					'submit_actions' => $this->get_name(),
-				],
-			]
-		);
-
-		$widget->add_control(
-			'campaign_key',
-			array(
-				'label' => __( 'Campaign Key', 'poc-foundation' ),
-				'type' => \Elementor\Controls_Manager::TEXT,
-			)
-		);
-
-		$widget->add_control(
-			'success_page',
-			array(
-				'label' => __( 'Success Page', 'poc-foundation' ),
-				'type' => \Elementor\Controls_Manager::SELECT,
-				'default' => array_keys( $page_options )[0],
-				'options' => $page_options
-			)
-		);
-
-		$widget->end_controls_section();
 	}
 
 	public function on_export( $element )
