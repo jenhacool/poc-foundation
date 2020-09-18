@@ -37,6 +37,10 @@ class Affiliate_Cart_Actions implements Hook
 
 	public function apply_coupon_by_customer_info( $post_data )
 	{
+		if ( $this->has_applied_coupons() ) {
+			return;
+		}
+
 		$data = array();
 
 		$post_data_array = explode( '&', $post_data );

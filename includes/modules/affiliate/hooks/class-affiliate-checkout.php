@@ -20,7 +20,7 @@ class Affiliate_Checkout implements Hook
                             $(document.body).on("keyup", "input#billing_email, input#billing_phone", function() {
                                 clearTimeout(timeout);
         						timeout = setTimeout(function () {
-                                	$("select#billing_country").trigger("change");
+                                	$("body").trigger("update_checkout");
                                 }, 600);
                             });
                         }); 
