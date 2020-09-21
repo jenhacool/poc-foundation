@@ -2,11 +2,13 @@
     <h1><?php echo __( 'Pay the reward', 'poc-foundation' ); ?></h1>
     <div >
         <form action="<?php echo $url ?>">
-            <table id="reward-table" class="form-table comment-ays wp-list-table widefat fixed striped pages">
-                <tr>
-                    <th scope="row" class="manage-column num "><?php echo __( 'ID Referral', 'poc-foundation-reward' ); ?></th>
-                    <th scope="row" class="manage-column num "><?php echo __( 'status', 'poc-foundation-reward' ); ?></th>
-                </tr>
+            <table id="edd_tax_rates" class="wp-list-table widefat fixed striped posts">
+                <thead>
+                    <tr>
+                        <th scope="row" class="num"><b><?php echo __( 'ID Referral', 'poc-foundation-reward' ); ?></b></th>
+                        <th scope="row" class="num"><b><?php echo __( 'status', 'poc-foundation-reward' ); ?></b></th>
+                    </tr>
+                </thead>
                 <tbody id="table_id_referral">
                 <?php
                 foreach ($data_array as $item) {
@@ -20,9 +22,6 @@
             </table>
             <br>
         </form>
-        <button id="submit_pay_reward" > Check pay the reward </button>
+        <button id="submit_pay_reward" class="button button-primary" > Check pay the reward </button>
     </div>
 </div>
-<?php echo $data;
-    echo '<br />';
-echo $data1; ?>

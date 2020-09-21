@@ -41,37 +41,37 @@
             </td>
         </tr>
         <tr valign="top">
-            <th scope="row">Referral rate</th>
+            <th scope="row">Referral rates</th>
             <td>
-                <p id="title_add_rate">Add lever for referral rate. Enter a percentage.</p>
+                <p id="title_add_rate">Add level for referral rate. Enter a percentage.</p>
                 <table id="edd_tax_rates" >
                     <tbody>
                     <?php if(empty($option->get( 'ref_rates' ))) { ?>
                         <tr>
                             <td class="edd_tax_rate">
-                                <i>Lever 1 :</i>
-                                <input type="number" id="poc_foundation[ref_rates][0]" min="0" max="100" required  name="poc_foundation[ref_rates][0]"
+                                <i>Level 1 :</i>
+                                <input type="number" id="poc_foundation[ref_rates][0]" min="0" max="100" required  name="poc_foundation[ref_rates][0]"> %
                             </td>
                             <td>
-                                <span class="edd_remove_tax_rate button-secondary">Remove lever</span>
+                                <span class="edd_remove_tax_rate button-secondary">Remove level</span>
                             </td>
                         </tr>
                     <?php } ?>
                     <?php foreach ($option->get( 'ref_rates' ) as $key => $value) { ?>
                         <tr>
                             <td class="edd_tax_rate">
-                                <i>Lever <?php echo $key + 1 ?> :</i>
-                                <input type="number" id="poc_foundation[ref_rates][<?php echo $key ?>]" min="0" max="100" required  name="poc_foundation[ref_rates][<?php echo $key ?>]" value="<?php echo $value; ?>">
+                                <i>Level <?php echo $key + 1 ?> :</i>
+                                <input type="number" id="poc_foundation[ref_rates][<?php echo $key ?>]" min="0" max="100" required  name="poc_foundation[ref_rates][<?php echo $key ?>]" value="<?php echo $value; ?>"> %
                             </td>
                             <td>
-                                <span class="edd_remove_tax_rate button-secondary">Remove lever</span>
+                                <span class="edd_remove_tax_rate button-secondary">Remove</span>
                             </td>
                         </tr>
                     <?php } ?>
                     </tbody>
                 </table>
                 <p>
-                    <span class="button-secondary" id="edd_add_tax_rate">Add more lever</span>
+                    <span class="button-secondary" id="edd_add_tax_rate">Add more level</span>
                 </p>
             </td>
             <td>

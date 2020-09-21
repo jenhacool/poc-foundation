@@ -4,14 +4,14 @@ window.onload = function() {
     var i = 1;
 
     $('#edd_tax_rates tr td input').each(function() {
-        data_rate.push({y: parseInt($(this).val()), label: "Lever "+i})
+        data_rate.push({y: parseInt($(this).val()), label: "Level "+i})
         i++
     });
 
     var chart = new CanvasJS.Chart("chartContainer", {
         animationEnabled: true,
         title: {
-            text: "Referral rate"
+            text: "Referral rates"
         },
         backgroundColor: "#f1f1f1",
         data: [{

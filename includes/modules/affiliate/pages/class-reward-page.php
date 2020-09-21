@@ -3,9 +3,7 @@
 namespace POC\Foundation\Modules\Affiliate\Pages;
 
 use POC\Foundation\Admin\Pages\Admin_Page;
-use POC\Foundation\Modules\Affiliate\Hooks\Affiliate_Order_Actions;
-
-class Pay_The_Reward_Page implements Admin_Page
+class Reward_Page implements Admin_Page
 {
     public static function render()
     {
@@ -17,7 +15,7 @@ class Pay_The_Reward_Page implements Admin_Page
 
     }
 
-    public function get_data_referral_from_meta_table()
+    public static function get_data_referral_from_meta_table()
     {
         global $wpdb;
         $sql = "SELECT post_id, meta_value
@@ -26,7 +24,7 @@ class Pay_The_Reward_Page implements Admin_Page
                     AND meta_value = 'sent'
                     OR meta_value = 'error'
                 ";
-        $results = $wpdb->get_results($sql);
+        $results = $wpdb->get_results( $sql );
         return $results;
     }
 }
