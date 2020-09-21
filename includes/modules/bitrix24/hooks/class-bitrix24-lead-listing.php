@@ -39,7 +39,7 @@ class Bitrix24_Lead_Listing implements Hook
 			return;
 		}
 
-		$bitrix24_status = get_post_meta( $post_id, 'poc_foundation_bitrix24_status', true );
+		$bitrix24_status = get_post_meta( $post_id, 'bitrix24_status', true );
 
 		if ( empty( $bitrix24_status ) ) {
 			echo 'Unscheduled';
@@ -59,8 +59,9 @@ class Bitrix24_Lead_Listing implements Hook
 		}
 
 		$options = array(
+            'unscheduled' => __( 'Unscheduled', 'poc-foundation' ),
 			'sent' => __( 'Sent', 'poc-foundation' )
-		 );
+        );
 
 		$selected = isset( $_GET['bitrix24_status'] ) ? $_GET['bitrix24_status'] : '';
 
@@ -84,9 +85,30 @@ class Bitrix24_Lead_Listing implements Hook
 			return $query;
 		}
 
-		$query->query_vars['meta_key'] = 'poc_foundation_bitrix24_status';
-		$query->query_vars['meta_value'] = $_GET['bitrix24_status'];
-		$query->query_vars['meta_compare'] = '=';
+		if ( $_GET['bitrix24_status'] === 'sent' ) {
+			$query->query_vars['meta_query'] = array(
+			    array(
+				    'key' => 'bitrix24_status',
+				    'value' => 'sent',
+				    'compare' => '=',
+                )
+            );
+
+			return $query;
+		}
+
+	    $query->query_vars['meta_query'] = array(
+            'relation' => 'OR',
+            array(
+                'key' => 'bitrix24_status',
+                'compare' => 'NOT EXISTS'
+            ),
+            array(
+	            'key' => 'bitrix24_status',
+	            'value' => 'sent',
+	            'compare' => '!='
+            )
+        );
 
 		return $query;
 	}

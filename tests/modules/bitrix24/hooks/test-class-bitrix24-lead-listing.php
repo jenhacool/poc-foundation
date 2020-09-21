@@ -86,13 +86,7 @@ class Test_Class_Bitrix24_Lead_Listing extends \WP_UnitTestCase
 		$this->instance->columns_content( 'bitrix24_status', $post_id );
 		$this->assertEquals( 'Unscheduled', ob_get_clean() );
 
-		update_post_meta( $post_id, 'poc_foundation_bitrix24_status', 'scheduled' );
-
-		ob_start();
-		$this->instance->columns_content( 'bitrix24_status', $post_id );
-		$this->assertEquals( 'Scheduled', ob_get_clean() );
-
-		update_post_meta( $post_id, 'poc_foundation_bitrix24_status', 'sent' );
+		update_post_meta( $post_id, 'bitrix24_status', 'sent' );
 
 		ob_start();
 		$this->instance->columns_content( 'bitrix24_status', $post_id );
@@ -105,17 +99,17 @@ class Test_Class_Bitrix24_Lead_Listing extends \WP_UnitTestCase
 
 		$pagenow = 'edit.php';
 
+		set_current_screen( 'edit-post' );
+
 		$_GET = array(
 			'post_type'	=> 'poc_foundation_lead',
 			'bitrix24_status' => 'sent'
 		);
 
-		set_current_screen( 'edit-post' );
-
 		$query = $this->instance->custom_filter_query( new \WP_Query() );
 
 		$this->assertArrayHasKey( 'meta_key', $query->query_vars );
-		$this->assertEquals( 'poc_foundation_bitrix24_status', $query->query_vars['meta_key'] );
+		$this->assertEquals( 'bitrix24_status', $query->query_vars['meta_key'] );
 
 		$this->assertArrayHasKey( 'meta_value', $query->query_vars );
 		$this->assertEquals( 'sent', $query->query_vars['meta_value'] );

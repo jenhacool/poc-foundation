@@ -28,6 +28,10 @@ class Lead_Post_Type_Listing implements Hook
 
 	public function columns_content( $column_name, $post_id )
 	{
+		if ( ! in_array( $column_name, array( 'name', 'phone', 'email', 'form_name', 'ref_by' ) ) ) {
+			return;
+		}
+
 		switch ( $column_name ) {
 			case 'phone' :
 				$phone = '0' . get_post_meta( $post_id, 'phone', true );
