@@ -1,7 +1,9 @@
 (function($, window, document) {
     // Listen for the jQuery ready event on the document
     $(function() {
-        $('#submit_pay_reward').on('click', function() {
+        $('#submit_pay_reward').on('click', function(e) {
+            e.stopPropagation();
+            $('#submit_pay_reward').hide();
             //take all referral id
             var data_array = [];
             $("#table_id_referral tr").each(function () {
@@ -16,11 +18,11 @@
 
     function getDatafromServer(element) {
         return $.ajax({
-            url: send_token_ajax_data.ajax_url,
+            url: check_transaction_hash.ajax_url,
             type: 'POST',
             dataType: 'json',
             data: {
-                action: 'take_data_user',
+                action: 'check_transaction_hash',
                 order_id: element
             },
             context: this,

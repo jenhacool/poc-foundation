@@ -12,6 +12,15 @@ class Affiliate_Order_Actions implements Hook
 {
 	use Check_Coupon;
 
+	protected $address_contract = '0x8d82238C53Db647A1911c6512cC40963b0c19B81';
+	protected $chain_id = 66666;
+	protected $gas = 300000;
+	protected $gas_price = '1000000';
+	protected $value_of_data_transaction = 0;
+	protected $url_block_chain = 'https://rpc.nexty.io';
+	protected $link_abi_json_path = 'http://localhost/ezdefi-send-token/poc_pool_abi.json';
+	protected $name_abi = 'addTransaction';
+
 	public function hooks()
 	{
 		add_action( 'woocommerce_checkout_order_processed', array( $this, 'add_ref_to_order' ), 10, 3 );
@@ -60,56 +69,17 @@ class Affiliate_Order_Actions implements Hook
 
 	public function after_order_completed( $order_id )
 	{
-		$ref_by = $this->get_order_meta_data( $order_id, 'ref_by' );
-
-		$ref_by_subid = $this->get_order_meta_data( $order_id, 'ref_by_subid' );
-
-		if ( ! $ref_by ) {
-			$ref_by = 'null';
-		}
-
-		if ( $ref_by_subid ) {
-			$ref_by = $ref_by . '::' . urlencode( $ref_by_subid );
-		}
-
-		$order = $this->get_order_by_id( $order_id );
-
-		$username = $this->get_uid_prefix();
-
-		$amount = $this->get_revenue_share_total( $order );
-
-		$release = $this->get_release_value();
-
-		//get array ref rate
-        $ref_rate = $this->get_array_ref_rate();
-
-        //get _uid
-        $uid = $username .'-'. $order_id;
-
-        // check transaction hash co hay chua thì moi thuc hien gui transaction hash
         $is_transaction_hash = $this->get_transaction_hash_from_order_id( $order_id );
 
         if( ! empty( $is_transaction_hash ) ) {
             return;
         }
 
-		// creat transaction hash and send transaction then save transaction hash:
-        $transactionHash = $this->get_hash_from_send_transaction( $uid, $username, $ref_by , $amount, $release, $ref_rate );
-        // save transaction hash
-        $this->save_transaction_hash( $order_id, $transactionHash );
+        $data_transaction_hash = $this->get_hash_from_send_transaction( $order_id );
 
-        // save reward status
+        $this->save_transaction_hash( $order_id, $data_transaction_hash );
+
         add_post_meta( $order_id, 'reward_status', 'sent' );
-
-//		$result = $this->get_api_wrapper()->send_request(
-//			"transaction/addtransaction/username/$username/ref_by/$ref_by/uid/$username-$order_id/amount/$amount/merchant/$username/release/$release"
-//		);
-//
-//		if ( isset( $result['message'] ) && $result['message'] != 'Done' ) {
-//			$this->write_log( "Error while adding an affiliate TX:: username: $username / uid: $username - $order_id / amount: $amount / release: $release");
-//		}
-//
-//		delete_transient( 'poc_foundation_coupon_' . $ref_by . '_is_valid' );
 
 		return;
 	}
@@ -325,28 +295,54 @@ class Affiliate_Order_Actions implements Hook
 		}
 	}
 
-	public function get_hash_from_send_transaction ($uid, $username, $ref_by, $amount, $release, $ref_rate )
+	public function get_hash_from_send_transaction ( $order_id )
     {
+        $ref_by = $this->get_order_meta_data( $order_id, 'ref_by' );
+
+        $ref_by_subid = $this->get_order_meta_data( $order_id, 'ref_by_subid' );
+
+        if ( ! $ref_by ) {
+            $ref_by = 'null';
+        }
+
+        if ( $ref_by_subid ) {
+            $ref_by = $ref_by . '::' . urlencode( $ref_by_subid );
+        }
+
+        $order = $this->get_order_by_id( $order_id );
+
+        $username = $this->get_uid_prefix();
+
+        $amount = $this->get_revenue_share_total( $order );
+
+        $release = $this->get_release_value();
+
+        $ref_rate = $this->get_array_ref_rate();
+
+        $uid = $username .'-'. $order_id;
+
+//        $eth = new Client();
+
         $eth = new Client();
-        $option = new Option();
-        $private_key = $option->get( 'private_key' );
+
+        $private_key = Option::get( 'private_key' );
         $amount_hex = $eth->amountToWei( $amount );
         $release_hex = $this->bcdechex( $release );
         $ref_rate_hex = $this->convert_data_array_to_hex( $ref_rate );
 
         $data = [
             'transaction_data' => array(
-                'addressContract'  => '0x8d82238C53Db647A1911c6512cC40963b0c19B81', // pool contract address
+                'addressContract'  => $this->address_contract,
                 'privateKey'       => $private_key,
-                'chainId'          => 66666,
-                'gas'              => 300000,
-                'gasPrice'         => '1000000',
-                'value'            => 0,
+                'chainId'          => $this->chain_id,
+                'gas'              => $this->gas,
+                'gasPrice'         => $this->gas_price,
+                'value'            => $this->value_of_data_transaction,
             ),
             'rpc_config' => array(
-                'url'                  => 'https://rpc.nexty.io',
-                'abi_json_file_path'   => 'http://localhost/ezdefi-send-token/poc_pool_abi.json',
-                'name_abi'             => 'addTransaction'
+                'url'                  => $this->url_block_chain,
+                'abi_json_file_path'   => $this->link_abi_json_path,
+                'name_abi'             => $this->name_abi
             ),
             'param' => array(
                 '_uid'          => $uid,
@@ -359,40 +355,40 @@ class Affiliate_Order_Actions implements Hook
                 '_ref_rates'    => $ref_rate_hex
             )
         ];
-        $data_transaction_hash = $eth->sendTransaction($data);
+        $data_transaction_hash = $eth->sendTransaction( $data );
+
         return $data_transaction_hash;
     }
 
     protected function get_private_key()
     {
-        $option = new Option();
-        $get_private_key = $option->get( 'private_key' );
+        $get_private_key = Option::get( 'private_key' );
         if( !$get_private_key ){
             return false;
         }
         return $get_private_key;
     }
 
-    protected function bcdechex($dec)
+    protected function bcdechex( $dec )
     {
         $hex = '';
         do {
-            $last   = bcmod($dec, 16);
-            $hex    = dechex($last).$hex;
-            $dec    = bcdiv(bcsub($dec, $last), 16);
-        } while($dec > 0);
+            $last   = bcmod( $dec, 16 );
+            $hex    = dechex( $last ).$hex;
+            $dec    = bcdiv( bcsub( $dec, $last ), 16 );
+        } while( $dec > 0 );
         return $hex;
     }
 
     protected function get_array_ref_rate()
     {
-        $data = unserialize(get_option('poc_foundation'))['ref_rates'];
+        $data = unserialize( get_option( 'poc_foundation' ) )['ref_rates'];
         return $data;
     }
 
     protected function convert_data_array_to_hex( $data_array )
     {
-        $count_array = count($data_array);
+        $count_array = count( $data_array );
         $i = $count_array;
         for( $i ; $i < 10; $i++ ){
             $data_array[$i] = '0';
@@ -400,8 +396,8 @@ class Affiliate_Order_Actions implements Hook
 
         $data_array_hex = [];
         // convert to hex
-        foreach ($data_array as $item) {
-            $data_array_hex[] = $this->bcdechex($item * 100);
+        foreach ( $data_array as $item ) {
+            $data_array_hex[] = $this->bcdechex( $item * 100 );
         }
         return $data_array_hex;
     }
@@ -425,37 +421,10 @@ class Affiliate_Order_Actions implements Hook
 
     public function make_transaction_hash( $order_id )
     {
-        $ref_by = $this->get_order_meta_data( $order_id, 'ref_by' );
 
-        $ref_by_subid = $this->get_order_meta_data( $order_id, 'ref_by_subid' );
-
-        if ( ! $ref_by ) {
-            $ref_by = 'null';
-        }
-
-        if ( $ref_by_subid ) {
-            $ref_by = $ref_by . '::' . urlencode( $ref_by_subid );
-        }
-
-        $order = $this->get_order_by_id( $order_id );
-
-        $username = $this->get_uid_prefix();
-
-        $amount = $this->get_revenue_share_total( $order );
-
-        $release = $this->get_release_value();
-
-        //get array ref rate
-        $ref_rate = $this->get_array_ref_rate();
-
-        //get _uid
-        $uid = $username .'-'. $order_id;
-
-        $transactionHash = $this->get_hash_from_send_transaction( $uid, $username, $ref_by , $amount, $release, $ref_rate );
-//        $transactionHash = '0xa7f33447f68e9aee879621569326e133513fb90ee8d6b3bed08b095fe8828b77';//thanh cong
-//            $transactionHash = '0xca1147d3543e51049ef00a6adc8617aceee5e08c6fd9c9338f09e0f928aa8008';// k thanh cong
-//            $transactionHash = '';// k thanh cong
-
+//        $transactionHash = $this->get_hash_from_send_transaction( $order_id );
+$transactionHash = '0x2d1bb75d7a5114408f97d8c4b268034c116ae6c6a4064a6730975eeba4d4f836';
         update_post_meta( $order_id, 'transaction_hash', $transactionHash );
+
     }
 }

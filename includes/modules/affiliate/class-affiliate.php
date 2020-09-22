@@ -4,6 +4,7 @@ namespace POC\Foundation\Modules\Affiliate;
 
 use POC\Foundation\Abstracts\Manager;
 use POC\Foundation\Contracts\Module;
+use POC\Foundation\Modules\Affiliate\Classes\Affiliate_AJAX;
 use POC\Foundation\Modules\Affiliate\Hooks\Affiliate_Admin;
 use POC\Foundation\Modules\Affiliate\Hooks\Affiliate_Checkout;
 use POC\Foundation\Modules\Affiliate\Hooks\Affiliate_Order_Actions;
@@ -25,6 +26,7 @@ class Affiliate extends Manager implements Module
 			new Affiliate_Product_Options(),
 			new Affiliate_Order_Actions(),
 			new Affiliate_Cart_Actions(),
+            new Affiliate_AJAX()
 		);
 	}
 }

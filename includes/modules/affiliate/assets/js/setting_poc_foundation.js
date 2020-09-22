@@ -3,6 +3,7 @@
     $(function() {
 
         $('#create_private_key').on('click', function () {
+            console.log(11111);
             $.ajax({
                 url: create_private_key.ajax_url,
                 type: 'POST',
@@ -32,16 +33,16 @@
             submitHandler: function(form) {
                 var total = 0;
                 var isValid = 1;
-                var floor = 0;
+                var level = 0;
                 $('#edd_tax_rates tr td input').each(function() {
                     total = total + parseInt($(this).val());
-                    floor++;
+                    level++;
                 });
-                if(floor > 10) {
+                if(level > 10) {
                     $( "#error_total_floor" ).remove();
                     $( "#error_total_rate" ).remove();
                     isValid = 0;
-                    $( "#title_add_rate" ).append( "<p id='error_total_floor' style='color: red'>Total floor : not more than 10</p>" );
+                    $( "#title_add_rate" ).append( "<p id='error_total_floor' style='color: red'>Total level : not more than 10</p>" );
                 }
 
                 if (total > 100){
@@ -49,6 +50,13 @@
                     $( "#error_total_floor" ).remove();
                     isValid = 0;
                     $( "#title_add_rate" ).append( "<p id='error_total_rate' style='color: red'>Total : not more than 100</p>" );
+                }
+
+                if( total < 100 ) {
+                    $( "#error_total_rate" ).remove();
+                    $( "#error_total_floor" ).remove();
+                    isValid = 0;
+                    $( "#title_add_rate" ).append( "<p id='error_total_rate' style='color: red'>Total percent: not enough 100 percent</p>" );
                 }
 
                 if(isValid == 1) {
@@ -91,7 +99,7 @@
                 name = name.replace( /\[(\d+)\]/, '[' + parseInt( count ) + ']');
                 $( this ).attr( 'name', name ).attr( 'id', name );
             });
-            clone.find( 'i' ).html('Floor '+(count+1) +':')
+            clone.find( 'i' ).html('Level '+(count+1) +':')
             clone.insertAfter( row );
             return false;
         });
