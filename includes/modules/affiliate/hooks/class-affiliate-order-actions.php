@@ -4,7 +4,7 @@ namespace POC\Foundation\Modules\Affiliate\Hooks;
 
 use POC\Foundation\Contracts\Hook;
 use POC\Foundation\Modules\Affiliate\Utilities\Check_Coupon;
-use POC\Foundation\Modules\Bitrix24\Classes\Order_Reward;
+use POC\Foundation\Modules\Affiliate\Classes\Order_Reward;
 
 class Affiliate_Order_Actions implements Hook
 {

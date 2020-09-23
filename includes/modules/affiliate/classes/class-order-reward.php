@@ -1,6 +1,6 @@
 <?php
 
-namespace POC\Foundation\Modules\Bitrix24\Classes;
+namespace POC\Foundation\Modules\Affiliate\Classes;
 
 use POC\Foundation\Classes\Option;
 use Ezdefi\Poc\Client;
