@@ -7,15 +7,14 @@ class Reward_Page implements Admin_Page
 {
     public static function render()
     {
-       $data_array = self::get_data_referral_from_meta_table();
+        $reward_items = self::get_reward_items();
 
         $url = wp_get_referer();
 
-        include_once dirname( __FILE__ ) . '/views/html-pay-the-reward.php';
-
+        include_once dirname( __FILE__ ) . '/views/html-reward-page.php';
     }
 
-    public static function get_data_referral_from_meta_table()
+    public static function get_reward_items()
     {
         global $wpdb;
         $sql = "SELECT post_id, meta_value

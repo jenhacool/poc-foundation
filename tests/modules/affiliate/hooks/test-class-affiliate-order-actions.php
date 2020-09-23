@@ -61,61 +61,43 @@ class Test_Class_Affiliate_Order_Actions extends \WP_UnitTestCase
 
 	public function test_add_ref_to_order_from_coupon_code()
 	{
-		$order_mock = m::mock( \WC_Order::class )->makePartial()->shouldAllowMockingProtectedMethods();
-		$order_mock->shouldReceive( 'get_coupon_codes' )->once()->andReturn( array( 'jenhacool' ) );
+		$order = new \WC_Order();
+		$order->apply_coupon( 'jenhacool' );
+		$order->save();
 
 		$mock = m::mock( Affiliate_Order_Actions::class )->makePartial()->shouldAllowMockingProtectedMethods();
 		$mock->shouldReceive( 'is_coupon_valid' )->once()->with( 'jenhacool' )->andReturn( true );
-		$mock->shouldReceive( 'add_order_meta_data' )->once()->with( 1, 'ref_by', 'jenhacool' )->andReturn( true );
 
-		$this->assertNull( $mock->add_ref_to_order( 1, array(), $order_mock ) );
+		$this->assertNull( $mock->add_ref_to_order( $order->get_id(), array(), $order ) );
+		$this->assertEquals( 'jenhacool', get_post_meta( $order->get_id(), 'ref_by', true ) );
 	}
 
 	public function test_add_ref_to_order_when_no_coupon_code()
 	{
 		$_COOKIE['ref_by'] = 'jenhacool';
 
-		$order_mock = m::mock( \WC_Order::class )->makePartial()->shouldAllowMockingProtectedMethods();
-		$order_mock->shouldReceive( 'get_coupon_codes' )->once()->andReturn( array() );
+		$order = new \WC_Order();
+		$order->save();
 
-		$mock = m::mock( Affiliate_Order_Actions::class )->makePartial()->shouldAllowMockingProtectedMethods();
-		$mock->shouldReceive( 'add_order_meta_data' )->once()->with( 1, 'ref_by', 'jenhacool' )->andReturn( true );
-
-		$this->assertNull( $mock->add_ref_to_order( 1, array(), $order_mock ) );
+		$this->assertNull( $this->instance->add_ref_to_order( $order->get_id(), array(), $order ) );
+		$this->assertEquals( 'jenhacool', get_post_meta( $order->get_id(), 'ref_by', true ) );
 	}
 
 	public function test_after_order_completed()
 	{
-		$api_mock = m::mock( POC_API::class );
-		$api_mock->shouldReceive( 'send_request' )->once()->with(
-			'transaction/addtransaction/username/foo.bar/ref_by/jenhacool/uid/foo.bar-1/amount/10/merchant/foo.bar/release/100'
-		)->andReturn( array( 'message' => 'Done' ) );
-
-		$order_mock = m::mock( \WC_Order::class )->makePartial()->shouldAllowMockingProtectedMethods();
+		$order = new \WC_Order();
+		$order->save();
 
 		$mock = m::mock( Affiliate_Order_Actions::class )->makePartial()->shouldAllowMockingProtectedMethods();
-		$mock->shouldReceive( 'get_order_meta_data' )->once()->with( 1, 'ref_by' )->andReturn( 'jenhacool' );
-		$mock->shouldReceive( 'get_order_meta_data' )->once()->with( 1, 'ref_by_subid' )->andReturn( '' );
-		$mock->shouldReceive( 'get_order_by_id' )->once()->with( 1 )->andReturn( $order_mock );
-		$mock->shouldReceive( 'get_revenue_share_total')->once()->with( $order_mock )->andReturn( 10 );
-		$mock->shouldReceive( 'get_uid_prefix' )->once()->andReturn( 'foo.bar' );
-		$mock->shouldReceive( 'get_release_value' )->once()->andReturn( 100 );
-		$mock->shouldReceive( 'get_api_wrapper' )->once()->andReturn( $api_mock );
+		$mock->shouldReceive( 'pay_reward' )->once()->with( $order->get_id() )->andReturn( 'test_hash' );
 
-		$this->assertNull( $mock->after_order_completed( 1 ) );
+		$this->assertNull( $mock->after_order_completed( $order->get_id() ) );
+		$this->assertEquals( 'test_hash', get_post_meta( $order->get_id(), 'transaction_hash', true ) );
+		$this->assertEquals( 'sent', get_post_meta( $order->get_id(), 'reward_status', true ) );
 	}
 
 	public function test_after_order_refunded()
 	{
-		$api_mock = m::mock( POC_API::class );
-		$api_mock->shouldReceive( 'send_request' )->once()->with(
-			'revoketransaction/uid/foo.bar.1'
-		)->andReturn( array( 'message' => 'Done' ) );
 
-		$mock = m::mock( Affiliate_Order_Actions::class )->makePartial()->shouldAllowMockingProtectedMethods();
-		$mock->shouldReceive( 'get_uid_prefix' )->once()->andReturn( 'foo.bar' );
-		$mock->shouldReceive( 'get_api_wrapper' )->once()->andReturn( $api_mock );
-
-		$this->assertNull( $mock->after_order_refunded( 1 ) );
 	}
 }

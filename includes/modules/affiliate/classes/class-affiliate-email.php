@@ -5,14 +5,12 @@ use POC\Foundation\Classes\Option;
 
 class Affiliate_Email
 {
-    public $message_error = 'Pay the reward failed.
-Please check review amount or network error !';
-
-    public function email_notification_error( $order_id )
+    public static function email_notification_error( $order_id )
     {
-        $email = Option::get( 'email_notification' );
-        $subject_email_error = "Pay the reward failed for order - " .$order_id;
-        wp_mail( $email, $subject_email_error, $this->message_error );
+        wp_mail(
+	        Option::get( 'email_notification' ),
+	        __( "Pay the reward failed for order - $order_id", 'poc-foundation' ),
+	        __( 'Pay the reward failed. \nPlease check review amount or network error !', 'poc-foundation' )
+        );
     }
-
 }

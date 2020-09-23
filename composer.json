@@ -16,9 +16,11 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "POC\\Foundation\\Tests\\": "tests/",
-            "App\\": "app/"
-        }
+            "POC\\Foundation\\Tests\\": "tests/"
+        },
+        "classmap": [
+            "tests/"
+        ]
     },
     "require": {
         "kornrunner/ethereum-address": "^0.1.0",

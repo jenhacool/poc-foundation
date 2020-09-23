@@ -1,8 +1,9 @@
 <?php
 
-namespace POC\Foundation\Classes;
+namespace POC\Foundation\Modules\Affiliate\Classes;
 
 use POC\Foundation\Abstracts\API;
+use POC\Foundation\Classes\Option;
 
 class POC_API extends API
 {

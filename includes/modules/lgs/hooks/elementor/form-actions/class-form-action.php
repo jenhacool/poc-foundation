@@ -3,17 +3,9 @@
 namespace POC\Foundation\Modules\LGS\Hooks\Elementor\FormActions;
 
 use POC\Foundation\Classes\Helper;
-use POC\Foundation\Classes\POC_API;
 
 class Form_Action extends \ElementorPro\Modules\Forms\Classes\Action_Base
 {
-	public $api;
-
-	public function __construct()
-	{
-		$this->api = new POC_API();
-	}
-
 	public function get_name()
 	{
 		return 'pocaffiliatenotifier';

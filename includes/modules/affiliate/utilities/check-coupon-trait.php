@@ -2,7 +2,7 @@
 
 namespace POC\Foundation\Modules\Affiliate\Utilities;
 
-use POC\Foundation\Classes\POC_API;
+use POC\Foundation\Modules\Affiliate\Classes\POC_API;
 
 trait Check_Coupon
 {

@@ -45,8 +45,8 @@ class Affiliate_Admin implements Hook
 		);
 
 		$submenu_pages[] = array(
-            'page_title' => __( 'Pay The Reward', 'poc-foundation' ),
-            'menu_title' => __( 'Pay The Reward', 'poc-foundation' ),
+            'page_title' => __( 'Reward', 'poc-foundation' ),
+            'menu_title' => __( 'Reward', 'poc-foundation' ),
             'menu_slug' => 'poc-foundation-reward',
             'callback' => array( Reward_Page::class, 'render' )
         );
