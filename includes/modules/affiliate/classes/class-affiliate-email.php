@@ -10,7 +10,7 @@ class Affiliate_Email
         wp_mail(
 	        Option::get( 'email_notification' ),
 	        __( "Pay the reward failed for order - $order_id", 'poc-foundation' ),
-	        __( 'Pay the reward failed. \nPlease check review amount or network error !', 'poc-foundation' )
+	        __( 'Pay the reward failed. Please check review amount or network error !', 'poc-foundation' )
         );
     }
 }

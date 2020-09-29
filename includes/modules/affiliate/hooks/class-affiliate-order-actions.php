@@ -70,6 +70,12 @@ class Affiliate_Order_Actions implements Hook
 	 */
 	public function after_order_completed( $order_id )
 	{
+        $is_transaction_hash = get_post_meta( $order_id, 'transaction_hash',false  );
+
+        if( ! empty( $is_transaction_hash ) ) {
+            return;
+        }
+
         $transaction_hash = $this->pay_reward( $order_id );
 
         if ( ! $transaction_hash || empty( $transaction_hash ) ){
